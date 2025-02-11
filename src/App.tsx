@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Flights from "./pages/Flights";
 import NotFound from "./pages/NotFound";
+import FlightSeats from "./components/flights/FlightSeats";
+import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
 
@@ -16,9 +18,11 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <Navbar />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/flights" element={<Flights />} />
+          <Route path="/flights/:flightId/seats" element={<FlightSeats />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
