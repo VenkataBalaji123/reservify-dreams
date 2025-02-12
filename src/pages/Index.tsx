@@ -1,12 +1,12 @@
 
-import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
+import ChatBot from '@/components/ChatBot';
 
 const Index = () => {
   return (
     <div className="min-h-screen">
-      <Navbar />
       <Hero />
+      <ChatBot />
     </div>
   );
 };
