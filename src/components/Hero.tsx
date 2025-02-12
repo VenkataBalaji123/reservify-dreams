@@ -1,5 +1,4 @@
-
-import { Calendar, MapPin, Search, Ticket, Film, Train, TrendingUp, Award, Star } from 'lucide-react';
+import { Calendar, MapPin, Search, Ticket, Film, Train, TrendingUp, Award, Star, Shield } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
