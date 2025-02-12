@@ -1,8 +1,10 @@
+
 import { Calendar, MapPin, Search, Ticket, Film, Train, TrendingUp, Award, Star, Shield } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdvancedSearch from './AdvancedSearch';
+import OffersSection from './OffersSection';
 
 const Hero = () => {
   const [searchType, setSearchType] = useState<'events' | 'movies' | 'trains'>('events');
@@ -13,13 +15,25 @@ const Hero = () => {
   };
 
   const popularDestinations = [
-    { name: 'Mumbai', image: 'https://source.unsplash.com/300x200/?mumbai' },
-    { name: 'Delhi', image: 'https://source.unsplash.com/300x200/?delhi' },
-    { name: 'Bangalore', image: 'https://source.unsplash.com/300x200/?bangalore' },
+    { 
+      name: 'Mumbai', 
+      image: 'https://images.unsplash.com/photo-1562979314-bee7453e911c',
+      description: 'The City of Dreams'
+    },
+    { 
+      name: 'Delhi', 
+      image: 'https://images.unsplash.com/photo-1587474260584-136574528ed5',
+      description: 'The Heart of India'
+    },
+    { 
+      name: 'Bangalore', 
+      image: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2',
+      description: 'The Silicon Valley of India'
+    },
   ];
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative">
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 animate-gradient">
         <div className="absolute inset-0 opacity-30">
@@ -71,11 +85,14 @@ const Hero = () => {
           <AdvancedSearch type={searchType} onSearch={handleSearch} />
         </div>
 
+        {/* Offers Section */}
+        <OffersSection />
+
         {/* Trending Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center justify-center gap-2">
             <TrendingUp className="w-8 h-8 text-indigo-600" />
-            Trending Now
+            Trending Destinations
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {popularDestinations.map((destination, index) => (
@@ -90,6 +107,7 @@ const Hero = () => {
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
                 <h3 className="text-xl font-semibold text-gray-900">{destination.name}</h3>
+                <p className="text-gray-600">{destination.description}</p>
               </div>
             ))}
           </div>

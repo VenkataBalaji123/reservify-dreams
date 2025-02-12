@@ -9,7 +9,81 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      coupons: {
+        Row: {
+          code: string
+          created_at: string | null
+          current_uses: number | null
+          description: string | null
+          discount_amount: number | null
+          discount_percentage: number | null
+          id: string
+          max_uses: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          max_uses?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          max_uses?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      offers: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          discount_amount: number | null
+          discount_percentage: number | null
+          id: string
+          image_url: string | null
+          title: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          image_url?: string | null
+          title: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          image_url?: string | null
+          title?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
