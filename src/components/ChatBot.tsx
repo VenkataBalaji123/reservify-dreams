@@ -4,6 +4,7 @@ import { MessageCircle, X, Send } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   text: string;
@@ -16,23 +17,43 @@ const ChatBot = () => {
     { text: "Hi! I'm your booking assistant. How can I help you today?", isBot: true }
   ]);
   const [input, setInput] = useState('');
+  const navigate = useNavigate();
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     // Add user message
+    const userMessage = input.toLowerCase();
     setMessages(prev => [...prev, { text: input, isBot: false }]);
-    
-    // Simulate bot response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        text: "I'll help you find the best options for your needs. Could you please provide more details?", 
-        isBot: true 
-      }]);
-    }, 1000);
-
     setInput('');
+
+    // Process user input and generate response
+    setTimeout(() => {
+      let botResponse = "I'll help you find what you're looking for. Could you please provide more details?";
+
+      if (userMessage.includes('flight') || userMessage.includes('fly')) {
+        botResponse = "I can help you book a flight. Let me take you to our flights page.";
+        setTimeout(() => navigate('/flights'), 1000);
+      } else if (userMessage.includes('movie') || userMessage.includes('film')) {
+        botResponse = "Looking to watch a movie? I'll show you what's playing.";
+        setTimeout(() => navigate('/movies'), 1000);
+      } else if (userMessage.includes('train') || userMessage.includes('railway')) {
+        botResponse = "Let me help you find train tickets.";
+        setTimeout(() => navigate('/trains'), 1000);
+      } else if (userMessage.includes('event') || userMessage.includes('show')) {
+        botResponse = "I'll show you upcoming events in your area.";
+        setTimeout(() => navigate('/events'), 1000);
+      } else if (userMessage.includes('sign') || userMessage.includes('login')) {
+        botResponse = "Let me help you with authentication.";
+        setTimeout(() => navigate('/signin'), 1000);
+      } else if (userMessage.includes('profile') || userMessage.includes('account')) {
+        botResponse = "I'll take you to your dashboard.";
+        setTimeout(() => navigate('/dashboard'), 1000);
+      }
+
+      setMessages(prev => [...prev, { text: botResponse, isBot: true }]);
+    }, 500);
   };
 
   return (
