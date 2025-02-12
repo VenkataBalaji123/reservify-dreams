@@ -16,6 +16,9 @@ import BusSeats from "./components/buses/BusSeats";
 import TrainSeats from "./components/trains/TrainSeats";
 import EventSeats from "./components/events/EventSeats";
 import MovieSeats from "./components/movies/MovieSeats";
+import SignIn from "./components/auth/SignIn";
+import SignUp from "./components/auth/SignUp";
+import Dashboard from "./components/dashboard/Dashboard";
 import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
@@ -29,6 +32,9 @@ const App = () => (
         <Navbar />
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/flights" element={<Flights />} />
           <Route path="/buses" element={<Buses />} />
           <Route path="/trains" element={<Trains />} />
