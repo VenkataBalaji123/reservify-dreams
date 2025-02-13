@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Mail, Lock, User, Phone, Calendar, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     phone: "",
@@ -17,7 +18,7 @@ const SignUp = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { signUp } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -31,17 +32,11 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      // Add registration logic here
-      toast({
-        title: "Success",
-        description: "Account created successfully!",
-      });
-      navigate("/dashboard");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create account",
-        variant: "destructive",
+      await signUp(formData.email, formData.password, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        dateOfBirth: formData.dateOfBirth,
       });
     } finally {
       setIsLoading(false);
@@ -57,17 +52,32 @@ const SignUp = () => {
         </div>
 
         <form onSubmit={handleSignUp} className="space-y-4">
-          <div className="relative">
-            <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <Input
-              name="fullName"
-              type="text"
-              placeholder="Full Name"
-              value={formData.fullName}
-              onChange={handleChange}
-              className="pl-10"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                name="firstName"
+                type="text"
+                placeholder="First Name"
+                value={formData.firstName}
+                onChange={handleChange}
+                className="pl-10"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                name="lastName"
+                type="text"
+                placeholder="Last Name"
+                value={formData.lastName}
+                onChange={handleChange}
+                className="pl-10"
+                required
+              />
+            </div>
           </div>
 
           <div className="relative">

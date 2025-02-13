@@ -1,11 +1,21 @@
 
 import { useState } from 'react';
-import { Menu, X, User, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Menu, X, User, Search, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <nav className="fixed w-full bg-white/80 backdrop-blur-lg z-50 border-b border-gray-200">
@@ -29,12 +39,36 @@ const Navbar = () => {
             <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
-              <User className="h-5 w-5" />
-            </Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-              Sign In
-            </Button>
+            
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile/edit')}>
+                    Edit Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                onClick={() => navigate('/signin')}
+              >
+                Sign In
+              </Button>
+            )}
           </div>
 
           <div className="md:hidden flex items-center">
@@ -70,9 +104,29 @@ const Navbar = () => {
           <Link to="/events" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
             Events
           </Link>
-          <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white">
-            Sign In
-          </Button>
+          {user ? (
+            <>
+              <Link to="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                Dashboard
+              </Link>
+              <Link to="/profile/edit" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                Edit Profile
+              </Link>
+              <Button 
+                onClick={signOut}
+                className="w-full mt-2 bg-red-600 hover:bg-red-700 text-white"
+              >
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <Button 
+              onClick={() => navigate('/signin')}
+              className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              Sign In
+            </Button>
+          )}
         </div>
       </div>
     </nav>

@@ -5,32 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { signIn } = useAuth();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Add authentication logic here
-      toast({
-        title: "Success",
-        description: "Successfully signed in!",
-      });
-      navigate("/dashboard");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Invalid credentials",
-        variant: "destructive",
-      });
+      await signIn(email, password);
     } finally {
       setIsLoading(false);
     }
