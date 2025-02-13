@@ -7,42 +7,42 @@ import { Calendar, MapPin, Clock, Users, Music, Tag } from 'lucide-react';
 const SAMPLE_EVENTS = [
   { 
     id: 1, 
-    name: 'Music Festival 2024', 
-    location: 'Mumbai', 
-    date: '2024-04-15', 
-    time: '18:00', 
-    price: 1500,
+    name: 'VTAPP 2025', 
+    location: 'VIT AP University', 
+    date: '2025-09-15', 
+    time: '09:00', 
+    price: 50,
     image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3',
-    category: 'Music',
-    organizer: 'EventPro India',
+    category: 'Technical Events',
+    organizer: 'VIT AP',
     availableSeats: 1000,
-    description: 'Experience the biggest music festival of the year with top artists.'
+    description: 'Technical fest featuring various competitions and workshops.'
   },
   { 
     id: 2, 
-    name: 'Comedy Night', 
-    location: 'Delhi', 
-    date: '2024-04-20', 
-    time: '20:00', 
-    price: 800,
+    name: 'VITOPIA 2025', 
+    location: 'VIT AP University', 
+    date: '2025-03-08', 
+    time: '10:00', 
+    price: 1000,
     image: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81',
-    category: 'Comedy',
-    organizer: 'Laugh Factory India',
-    availableSeats: 200,
-    description: 'A night of endless laughter with India\'s top comedians.'
+    category: 'Cultural Event',
+    organizer: 'VIT AP',
+    availableSeats: 2000,
+    description: 'Annual cultural festival with performances and activities.'
   },
   { 
     id: 3, 
-    name: 'Art Exhibition', 
-    location: 'Bangalore', 
-    date: '2024-04-25', 
+    name: 'Tech Symposium', 
+    location: 'VIT AP University', 
+    date: '2025-04-25', 
     time: '11:00', 
-    price: 500,
+    price: 75,
     image: 'https://images.unsplash.com/photo-1531058020387-3be344556be6',
-    category: 'Art',
-    organizer: 'Urban Art Gallery',
-    availableSeats: 150,
-    description: 'Contemporary art exhibition featuring emerging artists.'
+    category: 'Technical Events',
+    organizer: 'CSE Department',
+    availableSeats: 500,
+    description: 'Technical symposium featuring coding competitions and workshops.'
   },
 ];
 
