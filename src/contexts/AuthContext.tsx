@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -59,32 +59,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      if (!data) {
-        // If no profile exists, create one
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert([{ id: userId }]);
-
-        if (insertError) {
-          console.error('Error creating profile:', insertError);
-          return;
-        }
-
-        // Fetch the newly created profile
-        const { data: newProfile, error: newProfileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (newProfileError) {
-          console.error('Error fetching new profile:', newProfileError);
-          return;
-        }
-
-        setProfile(newProfile);
-      } else {
+      // If profile exists, set it and return
+      if (data) {
         setProfile(data);
+        return;
+      }
+
+      // If we get here, we'll try one more time after a short delay
+      // This gives the trigger time to create the profile if it hasn't yet
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      ({ data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle());
+
+      if (error) {
+        console.error('Error in second profile fetch attempt:', error);
+        return;
+      }
+
+      if (data) {
+        setProfile(data);
+      } else {
+        console.error('Profile not found after second attempt');
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error);
