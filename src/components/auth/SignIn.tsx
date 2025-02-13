@@ -4,22 +4,33 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { signIn } = useAuth();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
       await signIn(email, password);
+    } catch (error: any) {
+      if (error.message === "Invalid login credentials") {
+        setError("Invalid email or password. Please check your credentials or sign up if you don't have an account.");
+      } else if (error.message.includes("Email not confirmed")) {
+        setError("Please verify your email address before signing in. Check your inbox for the verification link.");
+      } else {
+        setError(error.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -32,6 +43,13 @@ const SignIn = () => {
           <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSignIn} className="space-y-4">
           <div className="space-y-2">
@@ -75,7 +93,7 @@ const SignIn = () => {
           </Button>
         </form>
 
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
             <Button
@@ -85,6 +103,9 @@ const SignIn = () => {
             >
               Sign Up
             </Button>
+          </p>
+          <p className="text-xs text-gray-500">
+            First time? You'll need to sign up and verify your email before signing in.
           </p>
         </div>
       </Card>
