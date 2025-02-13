@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          booking_date: string | null
+          created_at: string | null
+          id: string
+          package_id: string | null
+          passengers: number
+          status: string | null
+          total_price: number
+          user_id: string | null
+        }
+        Insert: {
+          booking_date?: string | null
+          created_at?: string | null
+          id?: string
+          package_id?: string | null
+          passengers: number
+          status?: string | null
+          total_price: number
+          user_id?: string | null
+        }
+        Update: {
+          booking_date?: string | null
+          created_at?: string | null
+          id?: string
+          package_id?: string | null
+          passengers?: number
+          status?: string | null
+          total_price?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "travel_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupons: {
         Row: {
           code: string
@@ -108,6 +149,69 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      travel_packages: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          created_by: string | null
+          description: string
+          destination: string
+          end_date: string
+          id: string
+          image_url: string | null
+          price: number
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          destination: string
+          end_date: string
+          id?: string
+          image_url?: string | null
+          price: number
+          start_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          destination?: string
+          end_date?: string
+          id?: string
+          image_url?: string | null
+          price?: number
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string | null
         }
         Relationships: []
       }
