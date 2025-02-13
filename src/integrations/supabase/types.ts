@@ -89,6 +89,51 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          base_price: number
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string
+          event_type: string
+          id: string
+          image_url: string | null
+          location: string
+          max_price: number | null
+          name: string
+          start_date: string
+        }
+        Insert: {
+          base_price: number
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date: string
+          event_type: string
+          id?: string
+          image_url?: string | null
+          location: string
+          max_price?: number | null
+          name: string
+          start_date: string
+        }
+        Update: {
+          base_price?: number
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string
+          event_type?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          max_price?: number | null
+          name?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           created_at: string | null
@@ -152,6 +197,36 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          item_id: string
+          item_type: string
+          rating: number | null
+          user_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          item_id: string
+          item_type: string
+          rating?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          item_type?: string
+          rating?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       travel_packages: {
         Row: {
           active: boolean | null
@@ -211,6 +286,30 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      wishlists: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_id: string
+          item_type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_id: string
+          item_type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          item_type?: string
           user_id?: string | null
         }
         Relationships: []
