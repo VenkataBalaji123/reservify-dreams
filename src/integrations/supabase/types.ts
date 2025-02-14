@@ -227,6 +227,104 @@ export type Database = {
         }
         Relationships: []
       }
+      seats: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          id: string
+          price: number
+          seat_number: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          price: number
+          seat_number: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          price?: number
+          seat_number?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seats_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_bookings: {
+        Row: {
+          booking_date: string | null
+          created_at: string | null
+          discount_amount: number | null
+          event_id: string | null
+          id: string
+          payment_status: string | null
+          promo_code: string | null
+          seat_id: string | null
+          status: Database["public"]["Enums"]["booking_status"] | null
+          total_amount: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          booking_date?: string | null
+          created_at?: string | null
+          discount_amount?: number | null
+          event_id?: string | null
+          id?: string
+          payment_status?: string | null
+          promo_code?: string | null
+          seat_id?: string | null
+          status?: Database["public"]["Enums"]["booking_status"] | null
+          total_amount: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          booking_date?: string | null
+          created_at?: string | null
+          discount_amount?: number | null
+          event_id?: string | null
+          id?: string
+          payment_status?: string | null
+          promo_code?: string | null
+          seat_id?: string | null
+          status?: Database["public"]["Enums"]["booking_status"] | null
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_bookings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_bookings_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "seats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       travel_packages: {
         Row: {
           active: boolean | null
@@ -322,7 +420,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      booking_status: "pending" | "confirmed" | "cancelled" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
