@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { IndianRupee, AlertCircle } from 'lucide-react';
+import { IndianRupee } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,15 +52,36 @@ const BookingManagement = () => {
       const { data, error } = await supabase
         .from('ticket_bookings')
         .select(`
-          *,
-          seats (seat_number),
-          event (name)
+          id,
+          event_id,
+          seat_id,
+          total_amount,
+          status,
+          created_at,
+          seats:seat_id(seat_number),
+          event:event_id(name)
         `)
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setBookings(data || []);
+
+      // Type guard to ensure data matches our Booking interface
+      const validBookings = (data || []).filter((booking): booking is Booking => {
+        return (
+          booking !== null &&
+          typeof booking.id === 'string' &&
+          typeof booking.event_id === 'string' &&
+          typeof booking.seat_id === 'string' &&
+          typeof booking.total_amount === 'number' &&
+          booking.seats !== null &&
+          typeof booking.seats.seat_number === 'string' &&
+          booking.event !== null &&
+          typeof booking.event.name === 'string'
+        );
+      });
+
+      setBookings(validBookings);
     } catch (error: any) {
       toast({
         title: "Error",
