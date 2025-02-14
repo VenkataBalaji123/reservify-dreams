@@ -15,6 +15,17 @@ interface Seat {
   status: string;
 }
 
+type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'failed';
+
+interface TicketBooking {
+  user_id: string | undefined;
+  event_id: string | undefined;
+  seat_id: string;
+  total_amount: number;
+  status: BookingStatus;
+  payment_status: 'pending' | 'completed' | 'failed';
+}
+
 const EventSeats = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
@@ -85,14 +96,14 @@ const EventSeats = () => {
     }
 
     try {
-      // Create booking for each selected seat
+      // Create booking for each selected seat with proper types
       const bookings = selectedSeats.map(seatId => ({
         user_id: user.id,
         event_id: eventId,
         seat_id: seatId,
         total_amount: seats.find(seat => seat.id === seatId)?.price || 0,
-        status: 'pending',
-        payment_status: 'pending'
+        status: 'pending' as BookingStatus,
+        payment_status: 'pending' as const
       }));
 
       const { error } = await supabase
