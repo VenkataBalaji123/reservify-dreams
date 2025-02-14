@@ -1,9 +1,17 @@
-
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { IndianRupee } from 'lucide-react';
+import { IndianRupee, CreditCard } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 interface Seat {
   id: string;
@@ -42,8 +50,12 @@ const generateMovieSeats = (): Seat[] => {
 
 const MovieSeats = () => {
   const { movieId } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [seats] = useState<Seat[]>(generateMovieSeats());
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSeatSelect = (seatId: string) => {
     setSelectedSeats(prev => {
@@ -60,9 +72,39 @@ const MovieSeats = () => {
       .reduce((total, seat) => total + seat.price, 0);
   };
 
-  const handleProceedToBooking = () => {
-    // Will be implemented when connecting to backend
-    console.log('Selected seats:', selectedSeats);
+  const handlePayment = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Simulate successful booking
+      const bookingDetails = {
+        id: Math.random().toString(36).substring(7),
+        seats: selectedSeats,
+        totalAmount: getTotalPrice(),
+        status: 'confirmed'
+      };
+
+      toast({
+        title: "Payment Successful",
+        description: "Your booking has been confirmed!",
+      });
+
+      // Navigate to booking confirmation
+      navigate('/booking-confirmation', { state: { bookingDetails } });
+    } catch (error) {
+      toast({
+        title: "Payment Failed",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+      setShowPayment(false);
+    }
   };
 
   return (
@@ -117,12 +159,75 @@ const MovieSeats = () => {
           <Button 
             className="w-full" 
             disabled={selectedSeats.length === 0}
-            onClick={handleProceedToBooking}
+            onClick={() => setShowPayment(true)}
           >
             Proceed to Payment
           </Button>
         </div>
       </Card>
+
+      {/* Payment Dialog */}
+      <Dialog open={showPayment} onOpenChange={setShowPayment}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Payment Details</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handlePayment} className="space-y-4">
+            <div>
+              <Label htmlFor="card-number">Card Number</Label>
+              <Input
+                id="card-number"
+                placeholder="4111 1111 1111 1111"
+                required
+                maxLength={19}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="expiry">Expiry Date</Label>
+                <Input
+                  id="expiry"
+                  placeholder="MM/YY"
+                  required
+                  maxLength={5}
+                />
+              </div>
+              <div>
+                <Label htmlFor="cvv">CVV</Label>
+                <Input
+                  id="cvv"
+                  type="password"
+                  placeholder="123"
+                  required
+                  maxLength={3}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="name">Cardholder Name</Label>
+              <Input
+                id="name"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                "Processing..."
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Pay ₹{getTotalPrice().toLocaleString('en-IN')}
+                </>
+              )}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <div className="flex gap-4 justify-center text-sm flex-wrap">
         <div className="flex items-center gap-2">
