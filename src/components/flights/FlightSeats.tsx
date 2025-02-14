@@ -1,21 +1,24 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { IndianRupee } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-interface SeatType {
+interface Seat {
   id: string;
   number: string;
   isAvailable: boolean;
   price: number;
 }
 
-const generateSeats = (): SeatType[] => {
+const generateSeats = (): Seat[] => {
   const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
   const columns = [1, 2, 3, 4, 5];
-  const seats: SeatType[] = [];
+  const seats: Seat[] = [];
 
   rows.forEach(row => {
     columns.forEach(col => {
@@ -34,7 +37,7 @@ const generateSeats = (): SeatType[] => {
 const FlightSeats = () => {
   const { flightId } = useParams();
   const navigate = useNavigate();
-  const [seats] = useState<SeatType[]>(generateSeats());
+  const [seats] = useState<Seat[]>(generateSeats());
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
 
   const handleSeatSelect = (seatId: string) => {
