@@ -338,6 +338,7 @@ export type Database = {
           price: number
           start_date: string
           updated_at: string | null
+          vijayawada: string | null
         }
         Insert: {
           active?: boolean | null
@@ -351,6 +352,7 @@ export type Database = {
           price: number
           start_date: string
           updated_at?: string | null
+          vijayawada?: string | null
         }
         Update: {
           active?: boolean | null
@@ -364,6 +366,7 @@ export type Database = {
           price?: number
           start_date?: string
           updated_at?: string | null
+          vijayawada?: string | null
         }
         Relationships: []
       }
