@@ -1,36 +1,56 @@
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Calendar, MapPin, Search } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FlightSearchProps {
   onSearch: () => void;
 }
 
 const FlightSearch = ({ onSearch }: FlightSearchProps) => {
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [date, setDate] = useState('');
+  const [tripType, setTripType] = useState('roundtrip');
+
   return (
     <div className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-xl animate-fade-in mb-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="relative">
           <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-          <input
+          <Input
             type="text"
             placeholder="From"
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="pl-10"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
           />
         </div>
         <div className="relative">
           <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-          <input
+          <Input
             type="text"
             placeholder="To"
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="pl-10"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
           />
         </div>
         <div className="relative">
           <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-          <input
+          <Input
             type="date"
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="pl-10"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
           />
         </div>
         <Button 
@@ -42,10 +62,17 @@ const FlightSearch = ({ onSearch }: FlightSearchProps) => {
         </Button>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Button variant="outline" size="sm">Round Trip</Button>
-        <Button variant="outline" size="sm">One Way</Button>
-        <Button variant="outline" size="sm">Multi-City</Button>
+      <div className="mt-4">
+        <Select value={tripType} onValueChange={setTripType}>
+          <SelectTrigger>
+            <SelectValue placeholder="Trip Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="roundtrip">Round Trip</SelectItem>
+            <SelectItem value="oneway">One Way</SelectItem>
+            <SelectItem value="multicity">Multi-City</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
