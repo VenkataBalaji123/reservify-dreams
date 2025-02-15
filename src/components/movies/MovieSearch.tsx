@@ -27,8 +27,8 @@ export interface SearchFilters {
 
 const MovieSearch = ({ onSearch }: MovieSearchProps) => {
   const [title, setTitle] = useState('');
-  const [languageId, setLanguageId] = useState('');
-  const [categoryId, setCategoryId] = useState('');
+  const [languageId, setLanguageId] = useState('all');
+  const [categoryId, setCategoryId] = useState('all');
   const [date, setDate] = useState('');
 
   const { data: languages } = useQuery({
@@ -57,8 +57,8 @@ const MovieSearch = ({ onSearch }: MovieSearchProps) => {
     e.preventDefault();
     onSearch({
       title: title || undefined,
-      language_id: languageId || undefined,
-      category_id: categoryId || undefined,
+      language_id: languageId === 'all' ? undefined : languageId,
+      category_id: categoryId === 'all' ? undefined : categoryId,
       date: date || undefined
     });
   };
@@ -89,7 +89,7 @@ const MovieSearch = ({ onSearch }: MovieSearchProps) => {
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Languages</SelectItem>
+                <SelectItem value="all">All Languages</SelectItem>
                 {languages?.map((lang) => (
                   <SelectItem key={lang.id} value={lang.id}>
                     {lang.name}
@@ -108,7 +108,7 @@ const MovieSearch = ({ onSearch }: MovieSearchProps) => {
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories?.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
