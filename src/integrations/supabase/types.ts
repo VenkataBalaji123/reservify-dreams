@@ -134,6 +134,54 @@ export type Database = {
         }
         Relationships: []
       }
+      flights: {
+        Row: {
+          aircraft_type: string | null
+          airline: string
+          arrival_city: string
+          arrival_time: string
+          available_seats: number
+          base_price: number
+          created_at: string | null
+          departure_city: string
+          departure_time: string
+          flight_number: string
+          id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          aircraft_type?: string | null
+          airline: string
+          arrival_city: string
+          arrival_time: string
+          available_seats: number
+          base_price: number
+          created_at?: string | null
+          departure_city: string
+          departure_time: string
+          flight_number: string
+          id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          aircraft_type?: string | null
+          airline?: string
+          arrival_city?: string
+          arrival_time?: string
+          available_seats?: number
+          base_price?: number
+          created_at?: string | null
+          departure_city?: string
+          departure_time?: string
+          flight_number?: string
+          id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       languages: {
         Row: {
           code: string
@@ -426,6 +474,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      train_routes: {
+        Row: {
+          arrival_station: string
+          arrival_time: string
+          available_seats: number
+          base_price: number
+          created_at: string | null
+          departure_station: string
+          departure_time: string
+          id: string
+          status: string | null
+          train_name: string
+          train_number: string
+          train_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          arrival_station: string
+          arrival_time: string
+          available_seats: number
+          base_price: number
+          created_at?: string | null
+          departure_station: string
+          departure_time: string
+          id?: string
+          status?: string | null
+          train_name: string
+          train_number: string
+          train_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          arrival_station?: string
+          arrival_time?: string
+          available_seats?: number
+          base_price?: number
+          created_at?: string | null
+          departure_station?: string
+          departure_time?: string
+          id?: string
+          status?: string | null
+          train_name?: string
+          train_number?: string
+          train_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       travel_packages: {
         Row: {
