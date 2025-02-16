@@ -27,13 +27,13 @@ interface TicketBooking {
 }
 
 const EventSeats = () => {
-  const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [seats, setSeats] = useState<Seat[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentEventId, setCurrentEventId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSeats();
@@ -59,6 +59,9 @@ const EventSeats = () => {
         navigate('/events');
         return;
       }
+
+      // Store the event ID for later use
+      setCurrentEventId(eventData.id);
 
       // Now fetch seats using the event UUID
       const { data, error } = await supabase
@@ -107,6 +110,15 @@ const EventSeats = () => {
       return;
     }
 
+    if (!currentEventId) {
+      toast({
+        title: "Error",
+        description: "Event not found. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (selectedSeats.length === 0) {
       toast({
         title: "No Seats Selected",
@@ -119,7 +131,7 @@ const EventSeats = () => {
     try {
       const bookings = selectedSeats.map(seatId => ({
         user_id: user.id,
-        event_id: eventId,
+        event_id: currentEventId,
         seat_id: seatId,
         total_amount: seats.find(seat => seat.id === seatId)?.price || 0,
         status: 'pending' as BookingStatus,
@@ -139,7 +151,7 @@ const EventSeats = () => {
 
       navigate('/payment', {
         state: {
-          eventId,
+          eventId: currentEventId,
           selectedSeats,
           totalAmount: getTotalPrice()
         }
