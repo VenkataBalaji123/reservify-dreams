@@ -47,7 +47,14 @@ const BookingHistory = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setBookings(data || []);
+      
+      // Type assertion to ensure booking_type is of type BookingType
+      const typedBookings = (data || []).map(booking => ({
+        ...booking,
+        booking_type: booking.booking_type as BookingType
+      }));
+
+      setBookings(typedBookings);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       toast.error('Failed to fetch bookings');
