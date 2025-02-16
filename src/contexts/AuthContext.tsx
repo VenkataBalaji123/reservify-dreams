@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '@supabase/supabase-js';
@@ -48,11 +47,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Updated query to use simpler syntax
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .filter('id', 'eq', userId)
+        .match({ id: userId })
         .maybeSingle();
 
       if (error) {
@@ -72,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: retryData, error: retryError } = await supabase
         .from('profiles')
         .select('*')
-        .filter('id', 'eq', userId)
+        .match({ id: userId })
         .maybeSingle();
 
       if (retryError) {
@@ -150,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase
         .from('profiles')
         .update(data)
-        .filter('id', 'eq', user?.id);
+        .match({ id: user?.id });
 
       if (error) throw error;
 
