@@ -320,6 +320,47 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          created_at: string | null
+          id: string
+          payment_date: string | null
+          payment_method: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          created_at?: string | null
+          id?: string
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          created_at?: string | null
+          id?: string
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "unified_bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           date_of_birth: string | null
@@ -568,6 +609,48 @@ export type Database = {
         }
         Relationships: []
       }
+      unified_bookings: {
+        Row: {
+          booking_date: string | null
+          booking_type: string
+          created_at: string | null
+          id: string
+          item_id: string
+          seat_number: string | null
+          ticket_status: Database["public"]["Enums"]["ticket_status"] | null
+          total_amount: number
+          travel_date: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          booking_date?: string | null
+          booking_type: string
+          created_at?: string | null
+          id?: string
+          item_id: string
+          seat_number?: string | null
+          ticket_status?: Database["public"]["Enums"]["ticket_status"] | null
+          total_amount: number
+          travel_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          booking_date?: string | null
+          booking_type?: string
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          seat_number?: string | null
+          ticket_status?: Database["public"]["Enums"]["ticket_status"] | null
+          total_amount?: number
+          travel_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -622,6 +705,8 @@ export type Database = {
     }
     Enums: {
       booking_status: "pending" | "confirmed" | "cancelled" | "failed"
+      payment_status: "pending" | "completed" | "failed" | "refunded"
+      ticket_status: "booked" | "cancelled" | "completed" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never

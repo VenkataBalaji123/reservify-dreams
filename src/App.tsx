@@ -24,6 +24,7 @@ import EditProfile from "./components/auth/EditProfile";
 import Navbar from "./components/Navbar";
 import BookingConfirmation from "./components/bookings/BookingConfirmation";
 import BookingManagement from "./components/bookings/BookingManagement";
+import BookingHistory from "./components/bookings/BookingHistory";
 
 const queryClient = new QueryClient();
 
@@ -52,7 +53,8 @@ const App = () => (
             <Route path="/events/:eventId/seats" element={<EventSeats />} />
             <Route path="/movies/:movieId/seats" element={<MovieSeats />} />
             <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-            <Route path="/bookings" element={<BookingManagement />} />
+            <Route path="/bookings" element={<BookingHistory />} />
+            <Route path="/bookings/manage" element={<BookingManagement />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
