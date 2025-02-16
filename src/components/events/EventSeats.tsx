@@ -36,31 +36,31 @@ const EventSeats = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!eventId) return;
     fetchSeats();
-  }, [eventId]);
+  }, []);
 
   const fetchSeats = async () => {
     try {
-      // First, verify if the event exists and get its UUID
+      // First get the latest event (the one we just created)
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('id')
-        .eq('id', eventId)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
 
       if (eventError) throw eventError;
       if (!eventData) {
         toast({
           title: "Event Not Found",
-          description: "The requested event could not be found.",
+          description: "No events found in the system.",
           variant: "destructive"
         });
         navigate('/events');
         return;
       }
 
-      // Now fetch seats using the verified event UUID
+      // Now fetch seats using the event UUID
       const { data, error } = await supabase
         .from('seats')
         .select('*')
@@ -117,7 +117,6 @@ const EventSeats = () => {
     }
 
     try {
-      // Create booking for each selected seat with proper types
       const bookings = selectedSeats.map(seatId => ({
         user_id: user.id,
         event_id: eventId,
@@ -138,7 +137,6 @@ const EventSeats = () => {
         description: "Your booking has been created successfully. Proceeding to payment.",
       });
 
-      // Navigate to payment page with booking details
       navigate('/payment', {
         state: {
           eventId,
