@@ -48,10 +48,11 @@ const BookingHistory = () => {
 
       if (error) throw error;
       
-      // Type assertion to ensure booking_type is of type BookingType
+      // Transform the data to match our UnifiedBooking type
       const typedBookings = (data || []).map(booking => ({
         ...booking,
-        booking_type: booking.booking_type as BookingType
+        booking_type: booking.booking_type as BookingType,
+        payment: booking.payment?.[0] // Take the first payment record since it's returned as an array
       }));
 
       setBookings(typedBookings);
