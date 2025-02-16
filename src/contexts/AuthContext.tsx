@@ -48,11 +48,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
+      // Updated query to use simpler syntax
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
-        .single();
+        .filter('id', 'eq', userId)
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
@@ -71,8 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: retryData, error: retryError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
-        .single();
+        .filter('id', 'eq', userId)
+        .maybeSingle();
 
       if (retryError) {
         console.error('Error in second profile fetch attempt:', retryError);
@@ -149,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase
         .from('profiles')
         .update(data)
-        .eq('id', user?.id);
+        .filter('id', 'eq', user?.id);
 
       if (error) throw error;
 
