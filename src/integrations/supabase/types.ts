@@ -320,6 +320,62 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_details: {
+        Row: {
+          account_last_four: string | null
+          bank_name: string | null
+          card_brand: string | null
+          card_expiry: string | null
+          card_last_four: string | null
+          created_at: string | null
+          id: string
+          ifsc_code: string | null
+          method_type: Database["public"]["Enums"]["payment_method_type"]
+          payment_id: string | null
+          transaction_reference: string | null
+          updated_at: string | null
+          upi_id: string | null
+        }
+        Insert: {
+          account_last_four?: string | null
+          bank_name?: string | null
+          card_brand?: string | null
+          card_expiry?: string | null
+          card_last_four?: string | null
+          created_at?: string | null
+          id?: string
+          ifsc_code?: string | null
+          method_type: Database["public"]["Enums"]["payment_method_type"]
+          payment_id?: string | null
+          transaction_reference?: string | null
+          updated_at?: string | null
+          upi_id?: string | null
+        }
+        Update: {
+          account_last_four?: string | null
+          bank_name?: string | null
+          card_brand?: string | null
+          card_expiry?: string | null
+          card_last_four?: string | null
+          created_at?: string | null
+          id?: string
+          ifsc_code?: string | null
+          method_type?: Database["public"]["Enums"]["payment_method_type"]
+          payment_id?: string | null
+          transaction_reference?: string | null
+          updated_at?: string | null
+          upi_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_details_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -329,6 +385,8 @@ export type Database = {
           payment_date: string | null
           payment_method: string | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
+          receipt_url: string | null
+          ticket_url: string | null
           transaction_id: string | null
         }
         Insert: {
@@ -339,6 +397,8 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          receipt_url?: string | null
+          ticket_url?: string | null
           transaction_id?: string | null
         }
         Update: {
@@ -349,6 +409,8 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          receipt_url?: string | null
+          ticket_url?: string | null
           transaction_id?: string | null
         }
         Relationships: [
@@ -705,6 +767,11 @@ export type Database = {
     }
     Enums: {
       booking_status: "pending" | "confirmed" | "cancelled" | "failed"
+      payment_method_type:
+        | "upi"
+        | "credit_card"
+        | "debit_card"
+        | "bank_transfer"
       payment_status: "pending" | "completed" | "failed" | "refunded"
       ticket_status: "booked" | "cancelled" | "completed" | "expired"
     }
