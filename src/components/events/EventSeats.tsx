@@ -27,7 +27,7 @@ interface TicketBooking {
 }
 
 const EventSeats = () => {
-  const { eventId } = useParams();
+  const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -36,15 +36,35 @@ const EventSeats = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!eventId) return;
     fetchSeats();
   }, [eventId]);
 
   const fetchSeats = async () => {
     try {
+      // First, verify if the event exists and get its UUID
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('id')
+        .eq('id', eventId)
+        .single();
+
+      if (eventError) throw eventError;
+      if (!eventData) {
+        toast({
+          title: "Event Not Found",
+          description: "The requested event could not be found.",
+          variant: "destructive"
+        });
+        navigate('/events');
+        return;
+      }
+
+      // Now fetch seats using the verified event UUID
       const { data, error } = await supabase
         .from('seats')
         .select('*')
-        .eq('event_id', eventId)
+        .eq('event_id', eventData.id)
         .order('seat_number');
 
       if (error) throw error;
@@ -55,6 +75,7 @@ const EventSeats = () => {
         description: "Failed to fetch seats. Please try again.",
         variant: "destructive"
       });
+      console.error('Error fetching seats:', error);
     } finally {
       setLoading(false);
     }
