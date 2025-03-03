@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import PaymentDialog from '@/components/payment/PaymentDialog';
-import { useNavigate } from 'react-router-dom';
 
 interface Seat {
   id: string;
