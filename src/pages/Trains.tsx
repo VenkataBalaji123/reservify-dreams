@@ -5,6 +5,18 @@ import TrainResults from '@/components/trains/TrainResults';
 
 const Trains = () => {
   const [searchPerformed, setSearchPerformed] = useState(false);
+  const [searchCriteria, setSearchCriteria] = useState({
+    from: '',
+    to: '',
+    date: '',
+    trainClass: 'all',
+    trainType: 'all'
+  });
+
+  const handleSearch = (criteria) => {
+    setSearchCriteria(criteria);
+    setSearchPerformed(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-100 pt-16">
@@ -14,8 +26,8 @@ const Trains = () => {
           <p className="text-gray-600">Search and book train tickets across India</p>
         </div>
 
-        <TrainSearch onSearch={() => setSearchPerformed(true)} />
-        {searchPerformed && <TrainResults />}
+        <TrainSearch onSearch={handleSearch} />
+        {searchPerformed && <TrainResults searchCriteria={searchCriteria} />}
       </div>
     </div>
   );

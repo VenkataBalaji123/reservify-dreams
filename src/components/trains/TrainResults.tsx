@@ -8,18 +8,55 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { format } from 'date-fns';
 
-const TrainResults = () => {
+interface SearchCriteria {
+  from: string;
+  to: string;
+  date: string;
+  trainClass: string;
+  trainType: string;
+}
+
+interface TrainResultsProps {
+  searchCriteria: SearchCriteria;
+}
+
+const TrainResults = ({ searchCriteria }: TrainResultsProps) => {
   const [selectedTrain, setSelectedTrain] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const { data: trains, isLoading } = useQuery({
-    queryKey: ['trains'],
+    queryKey: ['trains', searchCriteria],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('train_routes')
         .select('*')
         .gte('departure_time', new Date().toISOString())
         .order('departure_time', { ascending: true });
+
+      // Apply filters if provided
+      if (searchCriteria.from) {
+        query = query.ilike('departure_station', `%${searchCriteria.from}%`);
+      }
+      
+      if (searchCriteria.to) {
+        query = query.ilike('arrival_station', `%${searchCriteria.to}%`);
+      }
+      
+      if (searchCriteria.date) {
+        const selectedDate = new Date(searchCriteria.date);
+        const nextDay = new Date(selectedDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        query = query
+          .gte('departure_time', selectedDate.toISOString())
+          .lt('departure_time', nextDay.toISOString());
+      }
+      
+      if (searchCriteria.trainType && searchCriteria.trainType !== 'all') {
+        query = query.eq('train_type', searchCriteria.trainType);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;
@@ -39,9 +76,18 @@ const TrainResults = () => {
     );
   }
 
+  if (!trains || trains.length === 0) {
+    return (
+      <Card className="p-6 text-center">
+        <p className="text-gray-500">No trains found matching your criteria.</p>
+        <p className="text-sm mt-2">Try adjusting your search parameters.</p>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4 animate-fade-in">
-      {trains?.map((train) => (
+      {trains.map((train) => (
         <Card key={train.id} className="p-6 hover:shadow-lg transition-shadow">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex items-center gap-4">

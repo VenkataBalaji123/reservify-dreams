@@ -12,7 +12,13 @@ import {
 } from "@/components/ui/select";
 
 interface TrainSearchProps {
-  onSearch: () => void;
+  onSearch: (criteria: {
+    from: string;
+    to: string;
+    date: string;
+    trainClass: string;
+    trainType: string;
+  }) => void;
 }
 
 const TrainSearch = ({ onSearch }: TrainSearchProps) => {
@@ -24,7 +30,13 @@ const TrainSearch = ({ onSearch }: TrainSearchProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch();
+    onSearch({
+      from,
+      to,
+      date,
+      trainClass,
+      trainType
+    });
   };
 
   return (
