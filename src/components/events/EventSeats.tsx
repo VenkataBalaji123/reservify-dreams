@@ -7,6 +7,7 @@ import { IndianRupee } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import PaymentDialog from '@/components/payment/PaymentDialog';
 
 interface Seat {
   id: string;
@@ -34,6 +35,8 @@ const EventSeats = () => {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [bookingId, setBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSeats();
@@ -129,33 +132,24 @@ const EventSeats = () => {
     }
 
     try {
-      const bookings = selectedSeats.map(seatId => ({
-        user_id: user.id,
-        event_id: currentEventId,
-        seat_id: seatId,
-        total_amount: seats.find(seat => seat.id === seatId)?.price || 0,
-        status: 'pending' as BookingStatus,
-        payment_status: 'pending' as const
-      }));
+      // Create the unified booking instead of ticket_bookings
+      const { data: bookingData, error: bookingError } = await supabase
+        .from('unified_bookings')
+        .insert({
+          user_id: user.id,
+          booking_type: 'event',
+          item_id: currentEventId,
+          seat_number: selectedSeats.join(','),
+          total_amount: getTotalPrice(),
+          ticket_status: 'booked'
+        })
+        .select()
+        .single();
 
-      const { error } = await supabase
-        .from('ticket_bookings')
-        .insert(bookings);
+      if (bookingError) throw bookingError;
 
-      if (error) throw error;
-
-      toast({
-        title: "Booking Created",
-        description: "Your booking has been created successfully. Proceeding to payment.",
-      });
-
-      navigate('/payment', {
-        state: {
-          eventId: currentEventId,
-          selectedSeats,
-          totalAmount: getTotalPrice()
-        }
-      });
+      setBookingId(bookingData.id);
+      setShowPayment(true);
     } catch (error: any) {
       toast({
         title: "Booking Failed",
@@ -163,6 +157,20 @@ const EventSeats = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handlePaymentComplete = () => {
+    setShowPayment(false);
+    navigate('/booking-confirmation', {
+      state: {
+        bookingDetails: {
+          id: bookingId,
+          status: 'confirmed',
+          seats: selectedSeats,
+          totalAmount: getTotalPrice()
+        }
+      }
+    });
   };
 
   if (loading) {
@@ -239,6 +247,16 @@ const EventSeats = () => {
           <span>Unavailable</span>
         </div>
       </div>
+
+      {showPayment && bookingId && (
+        <PaymentDialog
+          open={showPayment}
+          onOpenChange={setShowPayment}
+          amount={getTotalPrice()}
+          bookingId={bookingId}
+          onPaymentComplete={handlePaymentComplete}
+        />
+      )}
     </div>
   );
 };

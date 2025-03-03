@@ -1,9 +1,12 @@
-
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { IndianRupee } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import PaymentDialog from '@/components/payment/PaymentDialog';
 
 interface Seat {
   id: string;
@@ -43,9 +46,14 @@ const generateTrainSeats = (): Seat[] => {
 
 const TrainSeats = () => {
   const { trainId } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
   const [seats] = useState<Seat[]>(generateTrainSeats());
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<Seat['type']>('AC3');
+  const [showPayment, setShowPayment] = useState(false);
+  const [bookingId, setBookingId] = useState<string | null>(null);
 
   const handleSeatSelect = (seatId: string) => {
     setSelectedSeats(prev => {
@@ -60,6 +68,69 @@ const TrainSeats = () => {
     return seats
       .filter(seat => selectedSeats.includes(seat.id))
       .reduce((total, seat) => total + seat.price, 0);
+  };
+
+  const handleProceedToPayment = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to continue with booking.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (selectedSeats.length === 0) {
+      toast({
+        title: "No seats selected",
+        description: "Please select at least one seat to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Create a booking record
+      const { data: bookingData, error: bookingError } = await supabase
+        .from('unified_bookings')
+        .insert({
+          user_id: user.id,
+          booking_type: 'train',
+          item_id: trainId,
+          seat_number: selectedSeats.join(','),
+          travel_date: new Date().toISOString(),
+          total_amount: getTotalPrice(),
+          ticket_status: 'booked'
+        })
+        .select()
+        .single();
+
+      if (bookingError) throw bookingError;
+
+      setBookingId(bookingData.id);
+      setShowPayment(true);
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast({
+        title: "Booking failed",
+        description: "There was an error creating your booking. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePaymentComplete = () => {
+    setShowPayment(false);
+    navigate('/booking-confirmation', {
+      state: {
+        bookingDetails: {
+          id: bookingId,
+          status: 'confirmed',
+          seats: selectedSeats,
+          totalAmount: getTotalPrice()
+        }
+      }
+    });
   };
 
   return (
@@ -127,6 +198,7 @@ const TrainSeats = () => {
           <Button 
             className="w-full" 
             disabled={selectedSeats.length === 0}
+            onClick={handleProceedToPayment}
           >
             Proceed to Payment
           </Button>
@@ -147,6 +219,16 @@ const TrainSeats = () => {
           <span>Unavailable</span>
         </div>
       </div>
+
+      {showPayment && bookingId && (
+        <PaymentDialog
+          open={showPayment}
+          onOpenChange={setShowPayment}
+          amount={getTotalPrice()}
+          bookingId={bookingId}
+          onPaymentComplete={handlePaymentComplete}
+        />
+      )}
     </div>
   );
 };

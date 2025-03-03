@@ -32,6 +32,7 @@ const ChatBot = () => {
     setTimeout(() => {
       let botResponse = "I'll help you find what you're looking for. Could you please provide more details?";
 
+      // Basic booking and navigation responses
       if (userMessage.includes('flight') || userMessage.includes('fly')) {
         botResponse = "I can help you book a flight. Let me take you to our flights page.";
         setTimeout(() => navigate('/flights'), 1000);
@@ -50,6 +51,28 @@ const ChatBot = () => {
       } else if (userMessage.includes('profile') || userMessage.includes('account')) {
         botResponse = "I'll take you to your dashboard.";
         setTimeout(() => navigate('/dashboard'), 1000);
+      }
+      
+      // Payment and ticket specific responses
+      else if (userMessage.includes('payment') && userMessage.includes('fail')) {
+        botResponse = "I'm sorry to hear about your payment issue. This could be due to insufficient funds, network issues, or card restrictions. You can try again with a different payment method or contact your bank.";
+      } else if (userMessage.includes('refund')) {
+        botResponse = "For refund inquiries, please check your booking history section in the dashboard. If eligible, you can initiate a refund there. Refunds typically take 5-7 business days to process.";
+        setTimeout(() => navigate('/bookings'), 1500);
+      } else if (userMessage.includes('cancel')) {
+        botResponse = "To cancel a booking, go to your booking history, select the booking you wish to cancel, and click on 'Cancel Booking'. Please note cancellation charges may apply based on the timing.";
+        setTimeout(() => navigate('/bookings'), 1500);
+      } else if (userMessage.includes('receipt') || userMessage.includes('invoice')) {
+        botResponse = "You can find and download your payment receipts from your booking history. Each confirmed booking has an option to view and download the receipt.";
+        setTimeout(() => navigate('/bookings'), 1000);
+      } else if (userMessage.includes('ticket') && userMessage.includes('print')) {
+        botResponse = "To print your tickets, go to your booking history, select the specific booking, and click on 'View Ticket'. From there, you can download or print your tickets.";
+        setTimeout(() => navigate('/bookings'), 1000);
+      } else if (userMessage.includes('payment method')) {
+        botResponse = "We accept various payment methods including credit/debit cards, UPI, and bank transfers. You can select your preferred method during the checkout process.";
+      } else if (userMessage.includes('booking') && userMessage.includes('confirm')) {
+        botResponse = "Once payment is successful, you'll receive a booking confirmation on the screen and via email. You can also check your booking status in your account dashboard.";
+        setTimeout(() => navigate('/dashboard'), 1500);
       }
 
       setMessages(prev => [...prev, { text: botResponse, isBot: true }]);
