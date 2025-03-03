@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BookingHistory from "@/components/bookings/BookingHistory";
 import BookingManagement from "@/components/bookings/BookingManagement";
 import { motion } from 'framer-motion';
-import { UserCog, History, CreditCard, CalendarDays, Map, Ticket } from 'lucide-react';
+import { UserCog, History, CreditCard, CalendarDays, Map, Ticket, Film, Plane, TrainFront } from 'lucide-react';
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -167,7 +167,7 @@ const UserDashboard = () => {
                       <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <Button variant="outline" onClick={() => navigate('/trains')}>
-                          <Train className="mr-2 h-4 w-4" />
+                          <TrainFront className="mr-2 h-4 w-4" />
                           Book Train
                         </Button>
                         <Button variant="outline" onClick={() => navigate('/flights')}>
