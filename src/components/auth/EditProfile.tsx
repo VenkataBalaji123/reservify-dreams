@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { User, Phone, Calendar, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const EditProfile = () => {
   const { profile, updateProfile } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     first_name: profile?.first_name || "",
@@ -27,8 +29,31 @@ const EditProfile = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Validate phone number - using a simple pattern check
+    const phonePattern = /^\+?[0-9\s-()]{7,15}$/;
+    if (formData.phone && !phonePattern.test(formData.phone)) {
+      toast({
+        title: "Invalid phone number",
+        description: "Please enter a valid phone number format",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       await updateProfile(formData);
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated",
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Update failed",
+        description: "There was a problem updating your profile",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -36,7 +61,7 @@ const EditProfile = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
-      <Card className="w-full max-w-md p-8 space-y-6">
+      <Card className="w-full max-w-md p-8 space-y-6 shadow-lg border-none bg-white/90 backdrop-blur-sm">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">Edit Profile</h1>
           <p className="text-gray-600 mt-2">Update your personal information</p>
@@ -94,7 +119,7 @@ const EditProfile = () => {
 
           <Button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 transition-all duration-300"
             disabled={isLoading}
           >
             {isLoading ? (
