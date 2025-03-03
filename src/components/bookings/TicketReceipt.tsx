@@ -82,8 +82,12 @@ const TicketReceipt = ({ bookingId, onDownload, onShare }: TicketReceiptProps) =
           itemDetails = data;
         }
 
+        // Make sure booking_type is valid before setting state
+        const validBookingType = validateBookingType(bookingData.booking_type);
+        
         setBooking({
           ...bookingData,
+          booking_type: validBookingType,
           item_details: itemDetails,
           payment: bookingData.payment?.[0] || null
         });
@@ -99,6 +103,14 @@ const TicketReceipt = ({ bookingId, onDownload, onShare }: TicketReceiptProps) =
       fetchBookingDetails();
     }
   }, [bookingId]);
+
+  // Helper function to validate booking_type
+  const validateBookingType = (type: string): BookingType => {
+    const validTypes: BookingType[] = ['flight', 'train', 'event', 'movie'];
+    return validTypes.includes(type as BookingType) 
+      ? type as BookingType 
+      : 'event'; // Default to 'event' if invalid type
+  };
 
   if (loading) {
     return (
