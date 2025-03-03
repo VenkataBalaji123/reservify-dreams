@@ -25,6 +25,7 @@ import Navbar from "./components/Navbar";
 import BookingConfirmation from "./components/bookings/BookingConfirmation";
 import BookingManagement from "./components/bookings/BookingManagement";
 import BookingHistory from "./components/bookings/BookingHistory";
+import UserDashboard from "./pages/UserDashboard";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +41,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<UserDashboard />} />
+            <Route path="/admin" element={<Dashboard />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/flights" element={<Flights />} />
             <Route path="/buses" element={<Buses />} />

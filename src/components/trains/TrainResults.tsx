@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Train, IndianRupee, Clock, Calendar } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
@@ -23,45 +23,59 @@ interface TrainResultsProps {
 const TrainResults = ({ searchCriteria }: TrainResultsProps) => {
   const [selectedTrain, setSelectedTrain] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [filteredTrains, setFilteredTrains] = useState<any[]>([]);
 
   const { data: trains, isLoading } = useQuery({
-    queryKey: ['trains', searchCriteria],
+    queryKey: ['trains'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('train_routes')
         .select('*')
-        .gte('departure_time', new Date().toISOString())
         .order('departure_time', { ascending: true });
 
-      // Apply filters if provided
-      if (searchCriteria.from) {
-        query = query.ilike('departure_station', `%${searchCriteria.from}%`);
-      }
-      
-      if (searchCriteria.to) {
-        query = query.ilike('arrival_station', `%${searchCriteria.to}%`);
-      }
-      
-      if (searchCriteria.date) {
-        const selectedDate = new Date(searchCriteria.date);
-        const nextDay = new Date(selectedDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        
-        query = query
-          .gte('departure_time', selectedDate.toISOString())
-          .lt('departure_time', nextDay.toISOString());
-      }
-      
-      if (searchCriteria.trainType && searchCriteria.trainType !== 'all') {
-        query = query.eq('train_type', searchCriteria.trainType);
-      }
-
-      const { data, error } = await query;
-
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
+
+  useEffect(() => {
+    if (!trains) return;
+    
+    let filtered = [...trains];
+    
+    // Apply filters if provided
+    if (searchCriteria.from) {
+      filtered = filtered.filter(train => 
+        train.departure_station.toLowerCase().includes(searchCriteria.from.toLowerCase())
+      );
+    }
+    
+    if (searchCriteria.to) {
+      filtered = filtered.filter(train => 
+        train.arrival_station.toLowerCase().includes(searchCriteria.to.toLowerCase())
+      );
+    }
+    
+    if (searchCriteria.date) {
+      const selectedDate = new Date(searchCriteria.date);
+      selectedDate.setHours(0, 0, 0, 0);
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      
+      filtered = filtered.filter(train => {
+        const trainDate = new Date(train.departure_time);
+        return trainDate >= selectedDate && trainDate < nextDay;
+      });
+    }
+    
+    if (searchCriteria.trainType && searchCriteria.trainType !== 'all') {
+      filtered = filtered.filter(train => 
+        train.train_type === searchCriteria.trainType
+      );
+    }
+    
+    setFilteredTrains(filtered);
+  }, [trains, searchCriteria]);
 
   const handleSelect = (trainId: string) => {
     setSelectedTrain(trainId);
@@ -76,7 +90,7 @@ const TrainResults = ({ searchCriteria }: TrainResultsProps) => {
     );
   }
 
-  if (!trains || trains.length === 0) {
+  if (!filteredTrains || filteredTrains.length === 0) {
     return (
       <Card className="p-6 text-center">
         <p className="text-gray-500">No trains found matching your criteria.</p>
@@ -87,8 +101,9 @@ const TrainResults = ({ searchCriteria }: TrainResultsProps) => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      {trains.map((train) => (
-        <Card key={train.id} className="p-6 hover:shadow-lg transition-shadow">
+      <p className="text-sm text-gray-500 pb-2">{filteredTrains.length} trains found</p>
+      {filteredTrains.map((train) => (
+        <Card key={train.id} className="p-6 hover:shadow-lg transition-shadow transform hover:scale-[1.01] duration-300">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-primary/10 rounded-full">
@@ -129,7 +144,10 @@ const TrainResults = ({ searchCriteria }: TrainResultsProps) => {
                   </p>
                   <p className="text-sm text-gray-500">{train.available_seats} seats left</p>
                 </div>
-                <Button onClick={() => handleSelect(train.id)}>Select</Button>
+                <Button onClick={() => handleSelect(train.id)} 
+                  className="bg-primary hover:bg-primary/90 transform hover:scale-105 transition-all">
+                  Select
+                </Button>
               </div>
             </div>
           </div>
