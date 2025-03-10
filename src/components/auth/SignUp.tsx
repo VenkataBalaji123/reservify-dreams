@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Mail, Lock, User, Phone, Calendar, Loader2 } from "lucide-react";
+import { Mail, Lock, User, Phone, Calendar, Loader2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -13,12 +15,15 @@ const SignUp = () => {
     lastName: "",
     email: "",
     password: "",
+    confirmPassword: "",
     phone: "",
     dateOfBirth: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { signUp } = useAuth();
+  const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -27,8 +32,40 @@ const SignUp = () => {
     });
   };
 
+  const validateForm = () => {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+      setError("All fields marked with * are required");
+      return false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return false;
+    }
+
+    // Validate phone number with a more lenient regex
+    const phonePattern = /^\+?[0-9\s-()]{7,15}$/;
+    if (formData.phone && !phonePattern.test(formData.phone)) {
+      setError("Please enter a valid phone number");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -38,6 +75,16 @@ const SignUp = () => {
         phone: formData.phone,
         dateOfBirth: formData.dateOfBirth,
       });
+      
+      toast({
+        title: "Account created successfully",
+        description: "Please check your email for verification.",
+      });
+      
+      navigate("/signin");
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      setError(error.message || "Failed to create account. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -45,11 +92,18 @@ const SignUp = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
-      <Card className="w-full max-w-md p-8 space-y-6 animate-fade-in-up">
+      <Card className="w-full max-w-md p-8 space-y-6 shadow-lg border-none bg-white/90 backdrop-blur-sm animate-fade-in-up">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
           <p className="text-gray-600 mt-2">Sign up for a new account</p>
         </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSignUp} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -58,7 +112,7 @@ const SignUp = () => {
               <Input
                 name="firstName"
                 type="text"
-                placeholder="First Name"
+                placeholder="First Name *"
                 value={formData.firstName}
                 onChange={handleChange}
                 className="pl-10"
@@ -71,7 +125,7 @@ const SignUp = () => {
               <Input
                 name="lastName"
                 type="text"
-                placeholder="Last Name"
+                placeholder="Last Name *"
                 value={formData.lastName}
                 onChange={handleChange}
                 className="pl-10"
@@ -85,7 +139,7 @@ const SignUp = () => {
             <Input
               name="email"
               type="email"
-              placeholder="Email"
+              placeholder="Email *"
               value={formData.email}
               onChange={handleChange}
               className="pl-10"
@@ -98,8 +152,21 @@ const SignUp = () => {
             <Input
               name="password"
               type="password"
-              placeholder="Password"
+              placeholder="Password *"
               value={formData.password}
+              onChange={handleChange}
+              className="pl-10"
+              required
+            />
+          </div>
+
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <Input
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm Password *"
+              value={formData.confirmPassword}
               onChange={handleChange}
               className="pl-10"
               required
@@ -115,7 +182,6 @@ const SignUp = () => {
               value={formData.phone}
               onChange={handleChange}
               className="pl-10"
-              required
             />
           </div>
 
@@ -127,13 +193,12 @@ const SignUp = () => {
               value={formData.dateOfBirth}
               onChange={handleChange}
               className="pl-10"
-              required
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 transition-all duration-300"
             disabled={isLoading}
           >
             {isLoading ? (

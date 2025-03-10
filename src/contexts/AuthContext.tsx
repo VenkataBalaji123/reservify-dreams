@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '@supabase/supabase-js';
@@ -97,6 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             first_name: userData.firstName,
             last_name: userData.lastName,
+            phone: userData.phone,
+            date_of_birth: userData.dateOfBirth,
           },
         },
       });
@@ -145,17 +148,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (data: any) => {
     try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      console.log('Updating profile with data:', data);
+
       const { error } = await supabase
         .from('profiles')
         .update(data)
-        .match({ id: user?.id });
+        .match({ id: user.id });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
 
+      // Update the local profile state
       setProfile({ ...profile, ...data });
       toast.success('Profile updated successfully!');
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Profile update error:', error);
+      toast.error(error.message || 'Failed to update profile');
       throw error;
     }
   };

@@ -1,22 +1,36 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { User, Phone, Calendar, Loader2 } from "lucide-react";
+import { User, Phone, Calendar, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const EditProfile = () => {
   const { profile, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    first_name: profile?.first_name || "",
-    last_name: profile?.last_name || "",
-    phone: profile?.phone || "",
-    date_of_birth: profile?.date_of_birth || "",
+    first_name: "",
+    last_name: "",
+    phone: "",
+    date_of_birth: "",
   });
+
+  // Update form data when profile changes
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone: profile.phone || "",
+        date_of_birth: profile.date_of_birth || "",
+      });
+    }
+  }, [profile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -25,21 +39,31 @@ const EditProfile = () => {
     });
   };
 
+  const validateForm = () => {
+    // Clear previous errors
+    setError("");
+    
+    // Validate phone number with a lenient regex that won't cause issues
+    if (formData.phone) {
+      const phonePattern = /^\+?[0-9\s-()]{7,15}$/;
+      if (!phonePattern.test(formData.phone)) {
+        setError("Please enter a valid phone number");
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Validate phone number - using a simple pattern check
-    const phonePattern = /^\+?[0-9\s-()]{7,15}$/;
-    if (formData.phone && !phonePattern.test(formData.phone)) {
-      toast({
-        title: "Invalid phone number",
-        description: "Please enter a valid phone number format",
-        variant: "destructive",
-      });
-      setIsLoading(false);
+    setError("");
+    
+    if (!validateForm()) {
       return;
     }
+    
+    setIsLoading(true);
 
     try {
       await updateProfile(formData);
@@ -47,8 +71,9 @@ const EditProfile = () => {
         title: "Profile updated",
         description: "Your profile has been successfully updated",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
+      setError(error.message || "There was a problem updating your profile");
       toast({
         title: "Update failed",
         description: "There was a problem updating your profile",
@@ -66,6 +91,13 @@ const EditProfile = () => {
           <h1 className="text-3xl font-bold text-gray-900">Edit Profile</h1>
           <p className="text-gray-600 mt-2">Update your personal information</p>
         </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -104,6 +136,7 @@ const EditProfile = () => {
               onChange={handleChange}
               className="pl-10"
             />
+            <p className="text-xs text-gray-500 mt-1">Format: +1234567890 or 1234567890</p>
           </div>
 
           <div className="relative">
