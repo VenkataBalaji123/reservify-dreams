@@ -48,6 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -60,12 +62,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data) {
+        console.log('Profile found:', data);
         setProfile(data);
         return;
       }
 
       // If we get here, we'll try one more time after a short delay
       // This gives the trigger time to create the profile if it hasn't yet
+      console.log('Profile not found on first attempt, retrying after delay...');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const { data: retryData, error: retryError } = await supabase
@@ -80,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (retryData) {
+        console.log('Profile found on retry:', retryData);
         setProfile(retryData);
       } else {
         console.error('Profile not found after second attempt');
@@ -91,7 +96,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Signing up user with data:', { email, userData });
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -104,12 +111,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Signup error:', error);
+        throw error;
+      }
+
+      console.log('Signup successful:', data);
+      
+      // Note: the on_auth_user_created trigger will automatically
+      // create a profile and assign a role to the new user
 
       toast.success('Registration successful! Please check your email for verification.');
       navigate('/signin');
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Error in signUp function:', error);
+      toast.error(error.message || 'An error occurred during signup');
       throw error;
     }
   };

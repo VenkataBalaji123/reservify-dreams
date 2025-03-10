@@ -23,6 +23,7 @@ const EditProfile = () => {
   // Update form data when profile changes
   useEffect(() => {
     if (profile) {
+      console.log("Setting form data from profile:", profile);
       setFormData({
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
@@ -43,11 +44,24 @@ const EditProfile = () => {
     // Clear previous errors
     setError("");
     
-    // Validate phone number with a lenient regex that won't cause issues
+    // Basic validation for required fields
+    if (!formData.first_name) {
+      setError("First name is required");
+      return false;
+    }
+    
+    if (!formData.last_name) {
+      setError("Last name is required");
+      return false;
+    }
+    
+    // Very basic phone validation - just check if it's mostly digits
+    // This is intentionally lenient to avoid regex issues
     if (formData.phone) {
-      const phonePattern = /^\+?[0-9\s-()]{7,15}$/;
-      if (!phonePattern.test(formData.phone)) {
-        setError("Please enter a valid phone number");
+      // Phone is optional, but if provided, should be mostly digits
+      const phoneDigits = formData.phone.replace(/[^0-9]/g, "");
+      if (phoneDigits.length < 7) {
+        setError("Please enter a valid phone number with at least 7 digits");
         return false;
       }
     }
@@ -66,6 +80,7 @@ const EditProfile = () => {
     setIsLoading(true);
 
     try {
+      console.log("Submitting profile update:", formData);
       await updateProfile(formData);
       toast({
         title: "Profile updated",
