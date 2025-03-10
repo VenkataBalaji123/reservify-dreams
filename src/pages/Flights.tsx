@@ -7,7 +7,8 @@ import FlightSearch from '@/components/flights/FlightSearch';
 import FlightResults from '@/components/flights/FlightResults';
 
 const Flights = () => {
-  const [searchPerformed, setSearchPerformed] = useState(false);
+  // Set searchPerformed to true by default to always show flight results
+  const [searchPerformed, setSearchPerformed] = useState(true);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-100 pt-16">

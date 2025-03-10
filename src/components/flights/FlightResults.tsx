@@ -7,22 +7,29 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { format } from 'date-fns';
+import { toast } from "@/components/ui/use-toast";
 
 const FlightResults = () => {
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const { data: flights, isLoading } = useQuery({
+  const { data: flights, isLoading, error } = useQuery({
     queryKey: ['flights'],
     queryFn: async () => {
+      console.log('Fetching flights data...');
+      // Don't filter by departure_time to show all flights
       const { data, error } = await supabase
         .from('flights')
         .select('*')
-        .gte('departure_time', new Date().toISOString())
         .order('departure_time', { ascending: true });
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching flights:', error);
+        throw error;
+      }
+      
+      console.log('Flights data retrieved:', data);
+      return data || [];
     }
   });
 
@@ -39,9 +46,28 @@ const FlightResults = () => {
     );
   }
 
+  if (error) {
+    console.error('Flight results error:', error);
+    return (
+      <Card className="p-6 text-center bg-red-50">
+        <p className="text-red-500">There was an error loading flights. Please try again later.</p>
+      </Card>
+    );
+  }
+
+  if (!flights || flights.length === 0) {
+    return (
+      <Card className="p-6 text-center">
+        <p className="text-gray-500">No flights available at the moment.</p>
+        <p className="text-sm mt-2">Please check back later or try different search criteria.</p>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4 animate-fade-in">
-      {flights?.map((flight) => (
+      <p className="text-sm text-gray-500 pb-2">{flights.length} flights found</p>
+      {flights.map((flight) => (
         <Card key={flight.id} className="p-6 hover:shadow-lg transition-shadow">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex items-center gap-4">
@@ -64,7 +90,7 @@ const FlightResults = () => {
                 <div className="w-32 h-px bg-gray-300 relative">
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <p className="text-xs text-gray-500">
-                      {format(new Date(flight.arrival_time), 'HH:mm')}
+                      {Math.round((new Date(flight.arrival_time).getTime() - new Date(flight.departure_time).getTime()) / (1000 * 60))} min
                     </p>
                   </div>
                 </div>
