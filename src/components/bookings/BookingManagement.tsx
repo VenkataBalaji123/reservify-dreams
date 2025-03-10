@@ -7,6 +7,7 @@ import { IndianRupee } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { BookingType, TicketStatus, UnifiedBooking } from "@/types/booking";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,23 +33,6 @@ interface Booking {
   event: {
     name: string;
   };
-}
-
-interface UnifiedBooking {
-  id: string;
-  booking_type: 'flight' | 'train' | 'event' | 'movie';
-  item_id: string;
-  seat_number: string;
-  ticket_status: 'booked' | 'cancelled' | 'completed' | 'expired';
-  total_amount: number;
-  created_at: string;
-  travel_date: string;
-  payment?: {
-    id: string;
-    payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
-    payment_method: string;
-    transaction_id: string;
-  }[];
 }
 
 const BookingManagement = () => {
@@ -123,7 +107,18 @@ const BookingManagement = () => {
       if (error) throw error;
       
       console.log('Unified bookings fetched:', data);
-      setUnifiedBookings(data || []);
+      
+      // Transform data to ensure booking_type is of valid BookingType
+      const typedBookings = (data || []).map(booking => {
+        // Ensure booking_type is one of the allowed types in BookingType
+        const validBookingType = validateBookingType(booking.booking_type);
+        return {
+          ...booking,
+          booking_type: validBookingType
+        } as UnifiedBooking;
+      });
+      
+      setUnifiedBookings(typedBookings);
     } catch (error: any) {
       console.error('Error fetching unified bookings:', error);
       toast({
@@ -132,6 +127,14 @@ const BookingManagement = () => {
         variant: "destructive"
       });
     }
+  };
+
+  // Validate and convert booking_type to a valid BookingType
+  const validateBookingType = (type: string): BookingType => {
+    const validTypes: BookingType[] = ['flight', 'train', 'event', 'movie'];
+    return validTypes.includes(type as BookingType) 
+      ? (type as BookingType) 
+      : 'event'; // Default fallback
   };
 
   const handleCancelBooking = async (bookingId: string) => {
