@@ -3,23 +3,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { IndianRupee } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { BookingType, TicketStatus, UnifiedBooking } from "@/types/booking";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { fetchUnifiedBookings, fetchEventBookings } from './BookingUtils';
+import BookingList from './BookingList';
+import { UnifiedBooking } from '@/types/booking';
 
+// Event Booking interface
 interface Booking {
   id: string;
   event_id: string;
@@ -45,32 +35,21 @@ const BookingManagement = () => {
 
   useEffect(() => {
     if (user) {
-      fetchBookings();
-      fetchUnifiedBookings();
+      fetchAllBookings();
     }
   }, [user]);
 
-  const fetchBookings = async () => {
+  const fetchAllBookings = async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('ticket_bookings')
-        .select(`
-          id,
-          event_id,
-          seat_id,
-          total_amount,
-          status,
-          created_at,
-          seats:seat_id(seat_number),
-          event:event_id(name)
-        `)
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Type guard to ensure data matches our Booking interface
-      const validBookings = (data || []).filter((booking): booking is Booking => {
+      // Fetch both types of bookings in parallel
+      const [eventBookingsData, unifiedBookingsData] = await Promise.all([
+        fetchEventBookings(user?.id || ''),
+        fetchUnifiedBookings(user?.id || '')
+      ]);
+      
+      // Type validation - filter out any invalid records
+      const validEventBookings = eventBookingsData.filter((booking): booking is Booking => {
         return (
           booking !== null &&
           typeof booking.id === 'string' &&
@@ -83,9 +62,11 @@ const BookingManagement = () => {
           typeof booking.event.name === 'string'
         );
       });
-
-      setBookings(validBookings);
+      
+      setBookings(validEventBookings);
+      setUnifiedBookings(unifiedBookingsData);
     } catch (error: any) {
+      console.error('Error fetching bookings:', error);
       toast({
         title: "Error",
         description: "Failed to fetch bookings. Please try again.",
@@ -93,98 +74,6 @@ const BookingManagement = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchUnifiedBookings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('unified_bookings')
-        .select('*, payment:payments(*)')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      console.log('Unified bookings fetched:', data);
-      
-      // Transform data to ensure booking_type is of valid BookingType
-      const typedBookings = (data || []).map(booking => {
-        // Ensure booking_type is one of the allowed types in BookingType
-        const validBookingType = validateBookingType(booking.booking_type);
-        return {
-          ...booking,
-          booking_type: validBookingType
-        } as UnifiedBooking;
-      });
-      
-      setUnifiedBookings(typedBookings);
-    } catch (error: any) {
-      console.error('Error fetching unified bookings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch unified bookings. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Validate and convert booking_type to a valid BookingType
-  const validateBookingType = (type: string): BookingType => {
-    const validTypes: BookingType[] = ['flight', 'train', 'event', 'movie'];
-    return validTypes.includes(type as BookingType) 
-      ? (type as BookingType) 
-      : 'event'; // Default fallback
-  };
-
-  const handleCancelBooking = async (bookingId: string) => {
-    try {
-      const { error } = await supabase
-        .from('ticket_bookings')
-        .update({ status: 'cancelled' })
-        .eq('id', bookingId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Booking Cancelled",
-        description: "Your booking has been cancelled successfully.",
-      });
-
-      fetchBookings();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to cancel booking. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleCancelUnifiedBooking = async (bookingId: string) => {
-    try {
-      const { error } = await supabase
-        .from('unified_bookings')
-        .update({ ticket_status: 'cancelled' })
-        .eq('id', bookingId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Booking Cancelled",
-        description: "Your booking has been cancelled successfully.",
-      });
-
-      fetchUnifiedBookings();
-    } catch (error: any) {
-      console.error('Error cancelling booking:', error);
-      toast({
-        title: "Error",
-        description: "Failed to cancel booking. Please try again.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -217,152 +106,11 @@ const BookingManagement = () => {
           </Button>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {unifiedBookings.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Flight, Train and Movie Bookings</h3>
-              {unifiedBookings.map((booking) => (
-                <Card key={booking.id} className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-semibold">
-                        {booking.booking_type.charAt(0).toUpperCase() + booking.booking_type.slice(1)} Booking
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Booking ID: {booking.id}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Seat: {booking.seat_number}
-                      </p>
-                      {booking.travel_date && (
-                        <p className="text-sm text-gray-600">
-                          Travel Date: {new Date(booking.travel_date).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center justify-end mb-2">
-                        <IndianRupee className="h-4 w-4" />
-                        <span className="font-semibold">
-                          {booking.total_amount.toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                      <span
-                        className={`inline-block px-2 py-1 text-xs rounded-full ${
-                          booking.ticket_status === 'booked'
-                            ? 'bg-green-100 text-green-800'
-                            : booking.ticket_status === 'cancelled'
-                            ? 'bg-red-100 text-red-800'
-                            : booking.ticket_status === 'completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {booking.ticket_status.charAt(0).toUpperCase() + booking.ticket_status.slice(1)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {booking.ticket_status === 'booked' && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full">
-                          Cancel Booking
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to cancel this booking? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Keep Booking</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleCancelUnifiedBooking(booking.id)}
-                            className="bg-red-500 hover:bg-red-600"
-                          >
-                            Cancel Booking
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </Card>
-              ))}
-            </div>
-          )}
-          
-          {bookings.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Event Bookings</h3>
-              {bookings.map((booking) => (
-                <Card key={booking.id} className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-semibold">{booking.event.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        Booking ID: {booking.id}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Seat: {booking.seats.seat_number}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center justify-end mb-2">
-                        <IndianRupee className="h-4 w-4" />
-                        <span className="font-semibold">
-                          {booking.total_amount.toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                      <span
-                        className={`inline-block px-2 py-1 text-xs rounded-full ${
-                          booking.status === 'confirmed'
-                            ? 'bg-green-100 text-green-800'
-                            : booking.status === 'cancelled'
-                            ? 'bg-red-100 text-red-800'
-                            : booking.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {booking.status === 'confirmed' && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full">
-                          Cancel Booking
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to cancel this booking? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Keep Booking</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleCancelBooking(booking.id)}
-                            className="bg-red-500 hover:bg-red-600"
-                          >
-                            Cancel Booking
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
+        <BookingList 
+          unifiedBookings={unifiedBookings}
+          eventBookings={bookings}
+          onBookingCancelled={fetchAllBookings}
+        />
       )}
     </div>
   );
