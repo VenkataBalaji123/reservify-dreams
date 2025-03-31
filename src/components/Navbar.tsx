@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Menu, X, User, Search, LogOut, Home, Plane, Film, Train, Calendar, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, Search, LogOut, Home, Plane, Film, Train, Calendar, LayoutDashboard, Crown } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -58,6 +58,10 @@ const Navbar = () => {
             <Link to="/events" className={`nav-link flex items-center gap-1 ${isActive('/events') ? 'text-indigo-600 after:scale-x-100' : ''}`}>
               <Calendar className="h-4 w-4" />
               Events
+            </Link>
+            <Link to="/premium-services" className={`nav-link flex items-center gap-1 ${isActive('/premium-services') ? 'text-indigo-600 after:scale-x-100' : ''}`}>
+              <Crown className="h-4 w-4" />
+              Premium
             </Link>
           </div>
 
@@ -146,6 +150,10 @@ const Navbar = () => {
           <Link to="/events" className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
             <Calendar className="mr-2 h-4 w-4" />
             Events
+          </Link>
+          <Link to="/premium-services" className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            <Crown className="mr-2 h-4 w-4" />
+            Premium Services
           </Link>
           {user ? (
             <>

@@ -34,11 +34,23 @@ interface ScheduleInfo {
     base_price: number;
   }[];
   events: {
+    id: string;
     name: string;
     location: string;
     start_date: string;
     event_type: string;
     base_price: number;
+    available_seats?: number;
+  }[];
+  movies: {
+    id: string;
+    title: string;
+    language?: string;
+    duration?: number;
+    release_date?: string;
+    base_price: number;
+    available_seats?: number;
+    showtimes?: string[];
   }[];
 }
 
@@ -50,37 +62,116 @@ const ChatBot = () => {
   const [input, setInput] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
   const [scheduleInfo, setScheduleInfo] = useState<ScheduleInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   // Fetch schedule information when the component mounts
   useEffect(() => {
     const fetchScheduleInfo = async () => {
       try {
+        setIsLoading(true);
+        
         // Fetch flights
         const { data: flights } = await supabase
           .from('flights')
-          .select('flight_number, airline, departure_city, arrival_city, departure_time, arrival_time, available_seats, base_price')
+          .select('id, flight_number, airline, departure_city, arrival_city, departure_time, arrival_time, available_seats, base_price')
           .limit(10);
 
         // Fetch trains
         const { data: trains } = await supabase
           .from('train_routes')
-          .select('train_number, train_name, departure_station, arrival_station, departure_time, arrival_time, available_seats, base_price')
+          .select('id, train_number, train_name, departure_station, arrival_station, departure_time, arrival_time, available_seats, base_price')
           .limit(10);
 
         // Fetch events
         const { data: events } = await supabase
           .from('events')
-          .select('name, location, start_date, event_type, base_price')
+          .select('id, name, location, start_date, event_type, base_price')
           .limit(10);
+
+        // Fetch movies
+        const { data: movies } = await supabase
+          .from('movies')
+          .select('id, title, language_id, duration, release_date, base_price')
+          .limit(10);
+
+        // Fetch seats for events to calculate available seats
+        const { data: eventSeats } = await supabase
+          .from('seats')
+          .select('id, venue_id, status')
+          .in('venue_type', ['event'])
+          .eq('status', 'available')
+          .limit(100);
+
+        // Fetch seats for movies to calculate available seats
+        const { data: movieSeats } = await supabase
+          .from('seats')
+          .select('id, venue_id, status')
+          .in('venue_type', ['movie'])
+          .eq('status', 'available')
+          .limit(100);
+
+        // Map movie showtimes
+        const { data: movieShowtimes } = await supabase
+          .from('showtimes')
+          .select('movie_id, start_time')
+          .limit(50);
+
+        // Calculate available seats for events
+        const eventSeatsCount: Record<string, number> = {};
+        if (eventSeats) {
+          eventSeats.forEach(seat => {
+            if (seat.venue_id) {
+              eventSeatsCount[seat.venue_id] = (eventSeatsCount[seat.venue_id] || 0) + 1;
+            }
+          });
+        }
+
+        // Calculate available seats for movies
+        const movieSeatsCount: Record<string, number> = {};
+        if (movieSeats) {
+          movieSeats.forEach(seat => {
+            if (seat.venue_id) {
+              movieSeatsCount[seat.venue_id] = (movieSeatsCount[seat.venue_id] || 0) + 1;
+            }
+          });
+        }
+
+        // Map showtimes to movies
+        const movieShowtimesMap: Record<string, string[]> = {};
+        if (movieShowtimes) {
+          movieShowtimes.forEach(showtime => {
+            if (!movieShowtimesMap[showtime.movie_id]) {
+              movieShowtimesMap[showtime.movie_id] = [];
+            }
+            movieShowtimesMap[showtime.movie_id].push(showtime.start_time);
+          });
+        }
+
+        // Add available seats to events
+        const eventsWithSeats = events?.map(event => ({
+          ...event,
+          available_seats: eventSeatsCount[event.id] || 0
+        })) || [];
+
+        // Add available seats and showtimes to movies
+        const moviesWithSeats = movies?.map(movie => ({
+          ...movie,
+          available_seats: movieSeatsCount[movie.id] || 0,
+          showtimes: movieShowtimesMap[movie.id] || []
+        })) || [];
 
         setScheduleInfo({
           flights: flights || [],
           trains: trains || [],
-          events: events || []
+          events: eventsWithSeats,
+          movies: moviesWithSeats
         });
+
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching schedule information:", error);
+        setIsLoading(false);
       }
     };
 
@@ -97,6 +188,46 @@ const ChatBot = () => {
     });
   };
 
+  const findSpecificItem = (type: 'flight' | 'train' | 'event' | 'movie', query: string) => {
+    if (!scheduleInfo) return null;
+    
+    let results = null;
+    const lowerQuery = query.toLowerCase();
+    
+    switch(type) {
+      case 'flight':
+        results = scheduleInfo.flights.find(flight => 
+          flight.flight_number.toLowerCase().includes(lowerQuery) || 
+          flight.airline.toLowerCase().includes(lowerQuery) ||
+          flight.departure_city.toLowerCase().includes(lowerQuery) ||
+          flight.arrival_city.toLowerCase().includes(lowerQuery)
+        );
+        break;
+      case 'train':
+        results = scheduleInfo.trains.find(train => 
+          train.train_number.toLowerCase().includes(lowerQuery) || 
+          train.train_name.toLowerCase().includes(lowerQuery) ||
+          train.departure_station.toLowerCase().includes(lowerQuery) ||
+          train.arrival_station.toLowerCase().includes(lowerQuery)
+        );
+        break;
+      case 'event':
+        results = scheduleInfo.events.find(event => 
+          event.name.toLowerCase().includes(lowerQuery) || 
+          event.location.toLowerCase().includes(lowerQuery) ||
+          event.event_type.toLowerCase().includes(lowerQuery)
+        );
+        break;
+      case 'movie':
+        results = scheduleInfo.movies.find(movie => 
+          movie.title.toLowerCase().includes(lowerQuery)
+        );
+        break;
+    }
+    
+    return results;
+  };
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -110,10 +241,95 @@ const ChatBot = () => {
     setTimeout(() => {
       let botResponse = "I'll help you find what you're looking for. Could you please provide more details?";
 
-      // Basic booking and navigation responses
-      if (userMessage.includes('flight') || userMessage.includes('fly')) {
-        if (userMessage.includes('schedule') || userMessage.includes('time') || userMessage.includes('available')) {
-          // Provide flight schedule information
+      // Check if the user is looking for specific information about flights, trains, events, or movies
+      const isAskingForSchedule = userMessage.includes('schedule') || userMessage.includes('time') || 
+                                  userMessage.includes('available') || userMessage.includes('when') ||
+                                  userMessage.includes('seats') || userMessage.includes('details');
+      
+      // Check if the user is looking for a specific flight, train, event, or movie
+      const isSpecificFlight = userMessage.includes('flight') && 
+                               (userMessage.includes('number') || /\b[A-Z]{2}\d+\b/.test(userMessage));
+      const isSpecificTrain = userMessage.includes('train') && 
+                              (userMessage.includes('number') || /\b\d{4,}\b/.test(userMessage));
+      const isSpecificEvent = userMessage.includes('event') && 
+                              (/concert|festival|conference|show|game/.test(userMessage));
+      const isSpecificMovie = userMessage.includes('movie') && 
+                              (/\b(watch|see|movie titled|film called)\b/.test(userMessage));
+      
+      // Extract specific item details if mentioned
+      let specificItemName = '';
+      if (isSpecificFlight || isSpecificTrain || isSpecificEvent || isSpecificMovie) {
+        const words = userMessage.split(/\s+/);
+        for (let i = 0; i < words.length; i++) {
+          if (words[i].match(/\b(flight|train|event|movie|titled|called)\b/) && i < words.length - 1) {
+            specificItemName = words.slice(i + 1).join(' ').replace(/[,.?!]/g, '');
+            break;
+          }
+        }
+      }
+
+      // Check for specific item information
+      if (isAskingForSchedule) {
+        if (isSpecificFlight && specificItemName) {
+          const flightInfo = findSpecificItem('flight', specificItemName);
+          if (flightInfo) {
+            botResponse = `Here are the details for flight ${(flightInfo as any).flight_number}:\n\n` +
+              `Airline: ${(flightInfo as any).airline}\n` +
+              `From: ${(flightInfo as any).departure_city}\n` +
+              `To: ${(flightInfo as any).arrival_city}\n` +
+              `Departure: ${formatDate((flightInfo as any).departure_time)}\n` +
+              `Arrival: ${formatDate((flightInfo as any).arrival_time)}\n` +
+              `Available Seats: ${(flightInfo as any).available_seats}\n` +
+              `Price: ₹${(flightInfo as any).base_price}\n\n` +
+              `Would you like to book this flight?`;
+          } else {
+            botResponse = `I couldn't find any information about a flight matching "${specificItemName}". Please check the flight details or try a different search.`;
+          }
+        } else if (isSpecificTrain && specificItemName) {
+          const trainInfo = findSpecificItem('train', specificItemName);
+          if (trainInfo) {
+            botResponse = `Here are the details for train ${(trainInfo as any).train_number}:\n\n` +
+              `Name: ${(trainInfo as any).train_name}\n` +
+              `From: ${(trainInfo as any).departure_station}\n` +
+              `To: ${(trainInfo as any).arrival_station}\n` +
+              `Departure: ${formatDate((trainInfo as any).departure_time)}\n` +
+              `Arrival: ${formatDate((trainInfo as any).arrival_time)}\n` +
+              `Available Seats: ${(trainInfo as any).available_seats}\n` +
+              `Price: ₹${(trainInfo as any).base_price}\n\n` +
+              `Would you like to book this train?`;
+          } else {
+            botResponse = `I couldn't find any information about a train matching "${specificItemName}". Please check the train details or try a different search.`;
+          }
+        } else if (isSpecificEvent && specificItemName) {
+          const eventInfo = findSpecificItem('event', specificItemName);
+          if (eventInfo) {
+            botResponse = `Here are the details for event "${(eventInfo as any).name}":\n\n` +
+              `Type: ${(eventInfo as any).event_type}\n` +
+              `Location: ${(eventInfo as any).location}\n` +
+              `Date: ${formatDate((eventInfo as any).start_date)}\n` +
+              `Available Seats: ${(eventInfo as any).available_seats || 'Information not available'}\n` +
+              `Price: ₹${(eventInfo as any).base_price}\n\n` +
+              `Would you like to book tickets for this event?`;
+          } else {
+            botResponse = `I couldn't find any information about an event matching "${specificItemName}". Please check the event details or try a different search.`;
+          }
+        } else if (isSpecificMovie && specificItemName) {
+          const movieInfo = findSpecificItem('movie', specificItemName);
+          if (movieInfo) {
+            const showtimes = (movieInfo as any).showtimes?.map((time: string) => formatDate(time)).join('\n- ') || 'No showtimes available';
+            botResponse = `Here are the details for movie "${(movieInfo as any).title}":\n\n` +
+              `Duration: ${(movieInfo as any).duration || 'Information not available'} minutes\n` +
+              `Release Date: ${(movieInfo as any).release_date ? formatDate((movieInfo as any).release_date) : 'Information not available'}\n` +
+              `Available Seats: ${(movieInfo as any).available_seats || 'Information not available'}\n` +
+              `Price: ₹${(movieInfo as any).base_price}\n\n` +
+              `Showtimes:\n- ${showtimes}\n\n` +
+              `Would you like to book tickets for this movie?`;
+          } else {
+            botResponse = `I couldn't find any information about a movie matching "${specificItemName}". Please check the movie title or try a different search.`;
+          }
+        }
+        // Show generic schedule information if no specific item is mentioned
+        else if (userMessage.includes('flight')) {
           if (scheduleInfo && scheduleInfo.flights.length > 0) {
             const flightInfo = scheduleInfo.flights.slice(0, 3).map(flight => 
               `${flight.airline} (${flight.flight_number}): ${flight.departure_city} to ${flight.arrival_city}, ${formatDate(flight.departure_time)}, ${flight.available_seats} seats, ₹${flight.base_price}`
@@ -123,16 +339,7 @@ const ChatBot = () => {
           } else {
             botResponse = "I'm having trouble retrieving flight schedules at the moment. Would you like to visit our flights page to see all available options?";
           }
-        } else {
-          botResponse = "I can help you book a flight. Let me take you to our flights page.";
-          setTimeout(() => navigate('/flights'), 1000);
-        }
-      } else if (userMessage.includes('movie') || userMessage.includes('film')) {
-        botResponse = "Looking to watch a movie? I'll show you what's playing.";
-        setTimeout(() => navigate('/movies'), 1000);
-      } else if (userMessage.includes('train') || userMessage.includes('railway')) {
-        if (userMessage.includes('schedule') || userMessage.includes('time') || userMessage.includes('available')) {
-          // Provide train schedule information
+        } else if (userMessage.includes('train')) {
           if (scheduleInfo && scheduleInfo.trains.length > 0) {
             const trainInfo = scheduleInfo.trains.slice(0, 3).map(train => 
               `${train.train_name} (${train.train_number}): ${train.departure_station} to ${train.arrival_station}, ${formatDate(train.departure_time)}, ${train.available_seats} seats, ₹${train.base_price}`
@@ -142,34 +349,50 @@ const ChatBot = () => {
           } else {
             botResponse = "I'm having trouble retrieving train schedules at the moment. Would you like to visit our trains page to see all available options?";
           }
-        } else {
-          botResponse = "Let me help you find train tickets.";
-          setTimeout(() => navigate('/trains'), 1000);
-        }
-      } else if (userMessage.includes('event') || userMessage.includes('show')) {
-        if (userMessage.includes('schedule') || userMessage.includes('time') || userMessage.includes('available')) {
-          // Provide event schedule information
+        } else if (userMessage.includes('event')) {
           if (scheduleInfo && scheduleInfo.events.length > 0) {
             const eventInfo = scheduleInfo.events.slice(0, 3).map(event => 
-              `${event.name}: ${event.location}, ${formatDate(event.start_date)}, ${event.event_type}, ₹${event.base_price}`
+              `${event.name}: ${event.location}, ${formatDate(event.start_date)}, ${event.event_type}, Available Seats: ${event.available_seats || 'N/A'}, ₹${event.base_price}`
             ).join('\n\n');
             
             botResponse = `Here are some upcoming events:\n\n${eventInfo}\n\nWould you like to book tickets for an event or see more options?`;
           } else {
             botResponse = "I'm having trouble retrieving event schedules at the moment. Would you like to visit our events page to see all available options?";
           }
-        } else {
-          botResponse = "I'll show you upcoming events in your area.";
-          setTimeout(() => navigate('/events'), 1000);
+        } else if (userMessage.includes('movie')) {
+          if (scheduleInfo && scheduleInfo.movies.length > 0) {
+            const movieInfo = scheduleInfo.movies.slice(0, 3).map(movie => 
+              `${movie.title}: Released on ${movie.release_date ? formatDate(movie.release_date) : 'N/A'}, Duration: ${movie.duration || 'N/A'} minutes, Available Seats: ${movie.available_seats || 'N/A'}, ₹${movie.base_price}`
+            ).join('\n\n');
+            
+            botResponse = `Here are some movies currently showing:\n\n${movieInfo}\n\nWould you like to book tickets for a movie or see more options?`;
+          } else {
+            botResponse = "I'm having trouble retrieving movie schedules at the moment. Would you like to visit our movies page to see all available options?";
+          }
         }
+      } 
+      // Basic booking and navigation responses without specific schedule info
+      else if (userMessage.includes('flight') || userMessage.includes('fly')) {
+        botResponse = "I can help you book a flight. Let me take you to our flights page.";
+        setTimeout(() => navigate('/flights'), 1000);
+      } else if (userMessage.includes('movie') || userMessage.includes('film')) {
+        botResponse = "Looking to watch a movie? I'll show you what's playing.";
+        setTimeout(() => navigate('/movies'), 1000);
+      } else if (userMessage.includes('train') || userMessage.includes('railway')) {
+        botResponse = "Let me help you find train tickets.";
+        setTimeout(() => navigate('/trains'), 1000);
+      } else if (userMessage.includes('event') || userMessage.includes('show')) {
+        botResponse = "I'll show you upcoming events in your area.";
+        setTimeout(() => navigate('/events'), 1000);
+      } else if (userMessage.includes('premium') || userMessage.includes('service') || userMessage.includes('special')) {
+        botResponse = "Let me show you our premium services that offer exclusive benefits.";
+        setTimeout(() => navigate('/premium-services'), 1000);
       } else if (userMessage.includes('sign') || userMessage.includes('login')) {
         botResponse = "Let me help you with authentication.";
         setTimeout(() => navigate('/signin'), 1000);
       } else if (userMessage.includes('profile') || userMessage.includes('account')) {
         botResponse = "I'll take you to your dashboard.";
         setTimeout(() => navigate('/dashboard'), 1000);
-      } else if (userMessage.includes('service') || userMessage.includes('premium')) {
-        botResponse = "We offer several premium services including Personal Travel Concierge, Mystery Destination packages, and Smart Bundle Builders. Would you like to learn more about these?";
       }
       
       // Payment and ticket specific responses
@@ -249,6 +472,11 @@ const ChatBot = () => {
                     {message.text}
                   </div>
                 ))}
+                {isLoading && (
+                  <div className="bg-gray-100 p-3 rounded-lg max-w-[80%] animate-pulse">
+                    Loading...
+                  </div>
+                )}
               </div>
 
               <form onSubmit={handleSend} className="p-4 border-t border-gray-200">

@@ -26,6 +26,7 @@ import BookingConfirmation from "./components/bookings/BookingConfirmation";
 import BookingManagement from "./components/bookings/BookingManagement";
 import BookingHistory from "./components/bookings/BookingHistory";
 import UserDashboard from "./pages/UserDashboard";
+import PremiumServices from "./pages/PremiumServices";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/trains" element={<Trains />} />
             <Route path="/events" element={<Events />} />
             <Route path="/movies" element={<Movies />} />
+            <Route path="/premium-services" element={<PremiumServices />} />
             <Route path="/flights/:flightId/seats" element={<FlightSeats />} />
             <Route path="/buses/:busId/seats" element={<BusSeats />} />
             <Route path="/trains/:trainId/seats" element={<TrainSeats />} />
