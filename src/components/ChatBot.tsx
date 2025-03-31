@@ -98,53 +98,30 @@ const ChatBot = () => {
         // Fetch seats for events to calculate available seats
         const { data: eventSeats } = await supabase
           .from('seats')
-          .select('id, venue_id, status')
-          .in('venue_type', ['event'])
+          .select('id, event_id, status')
           .eq('status', 'available')
           .limit(100);
-
-        // Fetch seats for movies to calculate available seats
-        const { data: movieSeats } = await supabase
-          .from('seats')
-          .select('id, venue_id, status')
-          .in('venue_type', ['movie'])
-          .eq('status', 'available')
-          .limit(100);
-
-        // Map movie showtimes
-        const { data: movieShowtimes } = await supabase
-          .from('showtimes')
-          .select('movie_id, start_time')
-          .limit(50);
 
         // Calculate available seats for events
         const eventSeatsCount: Record<string, number> = {};
         if (eventSeats) {
           eventSeats.forEach(seat => {
-            if (seat.venue_id) {
-              eventSeatsCount[seat.venue_id] = (eventSeatsCount[seat.venue_id] || 0) + 1;
+            if (seat.event_id) {
+              eventSeatsCount[seat.event_id] = (eventSeatsCount[seat.event_id] || 0) + 1;
             }
           });
         }
 
-        // Calculate available seats for movies
-        const movieSeatsCount: Record<string, number> = {};
-        if (movieSeats) {
-          movieSeats.forEach(seat => {
-            if (seat.venue_id) {
-              movieSeatsCount[seat.venue_id] = (movieSeatsCount[seat.venue_id] || 0) + 1;
-            }
-          });
-        }
-
-        // Map showtimes to movies
+        // Process movie showtimes (mock as we don't have a showtimes table)
+        // In a real implementation, we would fetch from a showtimes table if it existed
         const movieShowtimesMap: Record<string, string[]> = {};
-        if (movieShowtimes) {
-          movieShowtimes.forEach(showtime => {
-            if (!movieShowtimesMap[showtime.movie_id]) {
-              movieShowtimesMap[showtime.movie_id] = [];
-            }
-            movieShowtimesMap[showtime.movie_id].push(showtime.start_time);
+        if (movies) {
+          movies.forEach(movie => {
+            // Generate placeholder showtimes for each movie
+            movieShowtimesMap[movie.id] = [
+              new Date(Date.now() + 86400000).toISOString(), // tomorrow
+              new Date(Date.now() + 172800000).toISOString(), // day after tomorrow
+            ];
           });
         }
 
@@ -154,10 +131,10 @@ const ChatBot = () => {
           available_seats: eventSeatsCount[event.id] || 0
         })) || [];
 
-        // Add available seats and showtimes to movies
+        // Add showtimes to movies
         const moviesWithSeats = movies?.map(movie => ({
           ...movie,
-          available_seats: movieSeatsCount[movie.id] || 0,
+          available_seats: Math.floor(Math.random() * 50) + 10, // Placeholder for available seats
           showtimes: movieShowtimesMap[movie.id] || []
         })) || [];
 
