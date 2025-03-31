@@ -44,13 +44,37 @@ export const fetchUnifiedBookings = async (userId: string) => {
 
   if (error) throw error;
   
-  // Transform data to ensure booking_type is of valid BookingType
+  // Transform data to ensure booking_type is of valid BookingType and payment is properly typed
   const typedBookings = (data || []).map(booking => {
     const validBookingType = validateBookingType(booking.booking_type);
-    return {
-      ...booking,
-      booking_type: validBookingType
-    } as UnifiedBooking;
+    
+    // Create a properly typed UnifiedBooking object
+    const typedBooking: UnifiedBooking = {
+      id: booking.id,
+      user_id: booking.user_id,
+      booking_type: validBookingType,
+      item_id: booking.item_id,
+      seat_number: booking.seat_number,
+      booking_date: booking.booking_date,
+      travel_date: booking.travel_date,
+      ticket_status: booking.ticket_status as TicketStatus,
+      total_amount: booking.total_amount,
+      created_at: booking.created_at,
+      updated_at: booking.updated_at,
+      // Convert payment array to a single payment object if it exists
+      payment: booking.payment && booking.payment.length > 0 ? {
+        id: booking.payment[0].id,
+        booking_id: booking.payment[0].booking_id,
+        amount: booking.payment[0].amount,
+        payment_method: booking.payment[0].payment_method,
+        transaction_id: booking.payment[0].transaction_id,
+        payment_status: booking.payment[0].payment_status,
+        payment_date: booking.payment[0].payment_date,
+        created_at: booking.payment[0].created_at
+      } : undefined
+    };
+    
+    return typedBooking;
   });
   
   return typedBookings;
