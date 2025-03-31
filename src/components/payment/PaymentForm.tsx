@@ -12,6 +12,7 @@ import PaymentMethodSelector from './PaymentMethodSelector';
 import CardForm from './forms/CardForm';
 import UPIForm from './forms/UPIForm';
 import BankTransferForm from './forms/BankTransferForm';
+import CouponCodeForm from './CouponCodeForm';
 
 interface PaymentFormProps {
   amount: number;
@@ -35,10 +36,29 @@ const PaymentForm = ({ amount, bookingId, onSuccess, onError }: PaymentFormProps
     ifscCode: '',
     accountName: ''
   });
+  const [discount, setDiscount] = useState(0);
+  const [originalAmount] = useState(amount);
+  const [finalAmount, setFinalAmount] = useState(amount);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleApplyCoupon = (discountValue: number, discountType: 'percentage' | 'amount') => {
+    if (discountType === 'percentage') {
+      const discountAmount = (originalAmount * discountValue) / 100;
+      setDiscount(discountAmount);
+      setFinalAmount(originalAmount - discountAmount);
+    } else {
+      setDiscount(discountValue);
+      setFinalAmount(originalAmount - discountValue);
+    }
+  };
+
+  const handleClearCoupon = () => {
+    setDiscount(0);
+    setFinalAmount(originalAmount);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +72,7 @@ const PaymentForm = ({ amount, bookingId, onSuccess, onError }: PaymentFormProps
         .from('payments')
         .insert({
           booking_id: bookingId,
-          amount,
+          amount: finalAmount, // Use the discounted amount
           payment_method: method,
           payment_status: 'completed',
           payment_date: new Date().toISOString(),
@@ -103,9 +123,20 @@ const PaymentForm = ({ amount, bookingId, onSuccess, onError }: PaymentFormProps
           <h2 className="text-xl font-semibold">Payment Details</h2>
           <div className="text-2xl font-bold flex items-center">
             <IndianRupee className="h-5 w-5" />
-            {amount.toLocaleString('en-IN')}
+            {finalAmount.toLocaleString('en-IN')}
+            {discount > 0 && (
+              <span className="ml-2 text-sm text-green-600 font-normal">
+                (You saved ₹{discount.toLocaleString('en-IN')})
+              </span>
+            )}
           </div>
         </div>
+
+        <CouponCodeForm
+          onApply={handleApplyCoupon}
+          onClear={handleClearCoupon}
+          disabled={loading}
+        />
 
         <PaymentMethodSelector
           method={method}
@@ -144,7 +175,7 @@ const PaymentForm = ({ amount, bookingId, onSuccess, onError }: PaymentFormProps
               Processing
             </>
           ) : (
-            <>Pay {amount.toLocaleString('en-IN')} INR</>
+            <>Pay {finalAmount.toLocaleString('en-IN')} INR</>
           )}
         </Button>
       </form>
