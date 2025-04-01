@@ -16,14 +16,19 @@ import {
   Sparkles, 
   Award, 
   Globe, 
-  Calendar
+  Calendar,
+  CheckCircle,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const PremiumServiceCards = () => {
   const [selectedService, setSelectedService] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const premiumServices = [
     {
@@ -37,7 +42,8 @@ const PremiumServiceCards = () => {
         'Priority access to exclusive venues and experiences',
         'Personalized travel recommendations based on your preferences'
       ],
-      price: '₹5,999 per trip'
+      price: '₹999 per trip',
+      bgImage: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80'
     },
     {
       id: 'surprise',
@@ -50,7 +56,8 @@ const PremiumServiceCards = () => {
         'Personalized mystery box with destination hints',
         'Emergency support contact throughout the journey'
       ],
-      price: '₹12,999 per person'
+      price: '₹2,499 per person',
+      bgImage: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80'
     },
     {
       id: 'bundle',
@@ -63,7 +70,8 @@ const PremiumServiceCards = () => {
         'Flexible rebooking options',
         'Exclusive bundle-only discounts and perks'
       ],
-      price: '₹999 subscription fee + booking costs'
+      price: '₹299 subscription fee + booking costs',
+      bgImage: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80'
     },
     {
       id: 'loyalty',
@@ -76,7 +84,8 @@ const PremiumServiceCards = () => {
         'Priority customer support',
         'Free upgrades when available'
       ],
-      price: '₹4,999 annual membership'
+      price: '₹999 annual membership',
+      bgImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80'
     },
     {
       id: 'virtual',
@@ -89,7 +98,8 @@ const PremiumServiceCards = () => {
         'Expert-guided virtual tours of destinations',
         'Try-before-you-buy experience for premium bookings'
       ],
-      price: '₹499 per virtual tour package'
+      price: '₹149 per virtual tour package',
+      bgImage: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80'
     },
     {
       id: 'lastminute',
@@ -102,7 +112,8 @@ const PremiumServiceCards = () => {
         'One-click booking process',
         'Flexible cancellation on select deals'
       ],
-      price: '₹1,999 annual subscription'
+      price: '₹499 annual subscription',
+      bgImage: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?q=80'
     }
   ];
 
@@ -112,28 +123,63 @@ const PremiumServiceCards = () => {
   };
 
   const handleSubscribe = () => {
+    if (!user) {
+      toast.error("Please sign in to subscribe to premium services");
+      navigate('/signin');
+      return;
+    }
+    
     // This would connect to a payment processing service in a real application
-    alert(`Thank you for your interest in ${selectedService.name}! We'll redirect you to the payment page.`);
+    toast.success(`Thank you for your interest in ${selectedService.name}! Redirecting to payment page...`);
+    
+    // Simulate redirect delay
+    setTimeout(() => {
+      navigate('/booking-confirmation');
+    }, 1500);
+    
     setDialogOpen(false);
+  };
+
+  const handleLearnMore = (service: any) => {
+    setSelectedService(service);
+    setDialogOpen(true);
   };
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         {premiumServices.map((service) => (
-          <Card key={service.id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className="p-6">
-              <div className="mb-4 p-2 inline-flex rounded-full bg-indigo-100">
+          <Card 
+            key={service.id} 
+            className="overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:scale-105 group"
+            style={{
+              backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url(${service.bgImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          >
+            <div className="p-6 text-white">
+              <div className="mb-4 p-3 inline-flex rounded-full bg-indigo-100/20 backdrop-blur-sm">
                 {service.icon}
               </div>
               <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
-              <p className="text-gray-600 mb-6">{service.description}</p>
-              <Button 
-                className="w-full bg-indigo-600 hover:bg-indigo-700"
-                onClick={() => handleServiceSelect(service)}
-              >
-                Learn More & Subscribe
-              </Button>
+              <p className="text-gray-100 mb-4">{service.description}</p>
+              <p className="font-bold text-xl mb-6 text-indigo-300">{service.price}</p>
+              <div className="flex flex-col space-y-2 mt-auto">
+                <Button 
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 group-hover:translate-y-0"
+                  onClick={() => handleServiceSelect(service)}
+                >
+                  Subscribe Now <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-white/30 text-white hover:bg-white/20"
+                  onClick={() => handleLearnMore(service)}
+                >
+                  Learn More
+                </Button>
+              </div>
             </div>
           </Card>
         ))}
@@ -157,7 +203,7 @@ const PremiumServiceCards = () => {
               <ul className="space-y-2">
                 {selectedService.benefits.map((benefit: string, i: number) => (
                   <li key={i} className="flex items-start">
-                    <span className="mr-2 text-green-500">✓</span>
+                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
                     <span>{benefit}</span>
                   </li>
                 ))}

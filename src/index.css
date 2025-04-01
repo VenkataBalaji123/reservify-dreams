@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -93,6 +94,62 @@
 
   .animation-delay-4000 {
     animation-delay: 4s;
+  }
+  
+  /* Neon button effect */
+  .btn-neon {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  
+  .btn-neon::before {
+    content: '';
+    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300;
+  }
+  
+  .btn-neon:active::before {
+    @apply opacity-100;
+  }
+  
+  .btn-neon:active {
+    @apply shadow-[0_0_15px_rgba(79,70,229,0.8)];
+    transform: scale(0.98);
+  }
+  
+  /* 3D transitions for page changes */
+  .page-transition-enter {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  .page-transition-exit {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  
+  .page-transition-exit-active {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  /* Section background styling */
+  .section-bg {
+    @apply relative bg-cover bg-center bg-no-repeat;
+  }
+  
+  .section-bg::before {
+    content: '';
+    @apply absolute inset-0 bg-black/30 z-0;
+  }
+  
+  .section-bg > * {
+    @apply relative z-10;
   }
 }
 

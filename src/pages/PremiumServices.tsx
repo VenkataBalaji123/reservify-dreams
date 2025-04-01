@@ -11,15 +11,19 @@ const PremiumServices = () => {
         <SectionBanner
           title="Exclusive Premium Services"
           subtitle="Discover extraordinary experiences and personalized assistance that elevate your journey"
-          image="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80"
+          image="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80"
+          height="large"
         />
 
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Our Premium Offerings</h1>
-          <p className="text-gray-600 max-w-3xl mx-auto">
-            Take advantage of our exclusive services designed to make your travel and entertainment
-            experiences extraordinary and hassle-free.
-          </p>
+        <div className="text-center mb-12 animate-fade-in section-bg rounded-xl py-8 mt-8" 
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1518770660439-4636190af475?q=80)' }}>
+          <div className="px-6 py-12">
+            <h1 className="text-3xl font-bold text-white mb-4">Our Premium Offerings</h1>
+            <p className="text-white/90 max-w-3xl mx-auto">
+              Take advantage of our exclusive services designed to make your travel and entertainment
+              experiences extraordinary and hassle-free.
+            </p>
+          </div>
         </div>
 
         <PremiumServiceCards />
