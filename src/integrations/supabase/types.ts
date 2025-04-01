@@ -428,24 +428,33 @@ export type Database = {
           date_of_birth: string | null
           first_name: string | null
           id: string
+          is_premium: boolean | null
           last_name: string | null
           phone: string | null
+          premium_expiry: string | null
+          premium_type: string | null
           updated_at: string | null
         }
         Insert: {
           date_of_birth?: string | null
           first_name?: string | null
           id: string
+          is_premium?: boolean | null
           last_name?: string | null
           phone?: string | null
+          premium_expiry?: string | null
+          premium_type?: string | null
           updated_at?: string | null
         }
         Update: {
           date_of_birth?: string | null
           first_name?: string | null
           id?: string
+          is_premium?: boolean | null
           last_name?: string | null
           phone?: string | null
+          premium_expiry?: string | null
+          premium_type?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -673,39 +682,54 @@ export type Database = {
       }
       unified_bookings: {
         Row: {
+          amount: number | null
           booking_date: string | null
           booking_type: string
           created_at: string | null
+          description: string | null
           id: string
           item_id: string
+          metadata: Json | null
           seat_number: string | null
+          status: string | null
           ticket_status: Database["public"]["Enums"]["ticket_status"] | null
+          title: string | null
           total_amount: number
           travel_date: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          amount?: number | null
           booking_date?: string | null
           booking_type: string
           created_at?: string | null
+          description?: string | null
           id?: string
           item_id: string
+          metadata?: Json | null
           seat_number?: string | null
+          status?: string | null
           ticket_status?: Database["public"]["Enums"]["ticket_status"] | null
+          title?: string | null
           total_amount: number
           travel_date?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          amount?: number | null
           booking_date?: string | null
           booking_type?: string
           created_at?: string | null
+          description?: string | null
           id?: string
           item_id?: string
+          metadata?: Json | null
           seat_number?: string | null
+          status?: string | null
           ticket_status?: Database["public"]["Enums"]["ticket_status"] | null
+          title?: string | null
           total_amount?: number
           travel_date?: string | null
           updated_at?: string | null

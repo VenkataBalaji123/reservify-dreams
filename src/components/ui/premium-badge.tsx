@@ -28,27 +28,27 @@ const PremiumBadge = ({ variant = 'default', premiumType }: PremiumBadgeProps) =
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div>
+          <div className="inline-block">
             {variant === 'compact' ? (
               <Badge 
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 group flex items-center gap-1"
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 group flex items-center gap-1 shadow-[0_0_5px_rgba(124,58,237,0.5)] transition-all duration-300"
               >
-                <Sparkles className="h-3 w-3" />
-                <span className="hidden group-hover:inline-block">Premium</span>
+                <Sparkles className="h-3 w-3 text-yellow-200" />
+                <span className="hidden group-hover:inline-block transition-all">Premium</span>
               </Badge>
             ) : (
               <Badge 
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 group flex items-center gap-1 px-3 py-1"
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 group flex items-center gap-1 px-3 py-1 shadow-[0_0_5px_rgba(124,58,237,0.5)] transition-all duration-300"
               >
-                <Sparkles className="h-3 w-3" />
-                <span>Premium Member</span>
+                <Sparkles className="h-3 w-3 text-yellow-200" />
+                <span>{getPremiumLabel(premiumType)}</span>
               </Badge>
             )}
           </div>
         </TooltipTrigger>
-        <TooltipContent>
-          <p>{getPremiumLabel(premiumType)}</p>
-          <p className="text-xs opacity-70">Exclusive benefits unlocked</p>
+        <TooltipContent className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200">
+          <p className="font-medium text-indigo-700">{getPremiumLabel(premiumType)}</p>
+          <p className="text-xs text-indigo-600">Exclusive benefits unlocked</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
