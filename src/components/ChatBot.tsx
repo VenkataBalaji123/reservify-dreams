@@ -205,6 +205,42 @@ const ChatBot = () => {
     return results;
   };
 
+  const handleBookingRequest = (bookingType: string) => {
+    let route = '/';
+    let response = '';
+
+    switch(bookingType.toLowerCase()) {
+      case 'flight':
+        route = '/flights';
+        response = "I'll help you book a flight. Redirecting you to our flight booking page...";
+        break;
+      case 'train':
+        route = '/trains';
+        response = "I'll help you book a train ticket. Redirecting you to our train booking page...";
+        break;
+      case 'event':
+        route = '/events';
+        response = "I'll help you book event tickets. Redirecting you to our events page...";
+        break;
+      case 'movie':
+        route = '/movies';
+        response = "I'll help you book movie tickets. Redirecting you to our movies page...";
+        break;
+      default:
+        route = '/';
+        response = "What would you like to book? We offer flights, trains, events, and movie tickets. Please specify which one you're interested in.";
+        break;
+    }
+
+    setMessages(prev => [...prev, { text: response, isBot: true }]);
+    
+    if (route !== '/') {
+      setTimeout(() => navigate(route), 1500);
+    }
+    
+    return response;
+  };
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -217,6 +253,27 @@ const ChatBot = () => {
     // Process user input and generate response
     setTimeout(() => {
       let botResponse = "I'll help you find what you're looking for. Could you please provide more details?";
+
+      // Handle booking requests
+      if (userMessage.includes('book') || userMessage.includes('reserve') || userMessage.includes('purchase')) {
+        if (userMessage.includes('flight') || userMessage.includes('plane') || userMessage.includes('fly')) {
+          handleBookingRequest('flight');
+          return;
+        } else if (userMessage.includes('train') || userMessage.includes('rail')) {
+          handleBookingRequest('train');
+          return;
+        } else if (userMessage.includes('event') || userMessage.includes('concert') || userMessage.includes('show')) {
+          handleBookingRequest('event');
+          return;
+        } else if (userMessage.includes('movie') || userMessage.includes('film') || userMessage.includes('cinema')) {
+          handleBookingRequest('movie');
+          return;
+        } else {
+          // Generic booking request
+          handleBookingRequest('');
+          return;
+        }
+      }
 
       // Check if the user is looking for specific information about flights, trains, events, or movies
       const isAskingForSchedule = userMessage.includes('schedule') || userMessage.includes('time') || 
@@ -370,6 +427,16 @@ const ChatBot = () => {
       } else if (userMessage.includes('profile') || userMessage.includes('account')) {
         botResponse = "I'll take you to your dashboard.";
         setTimeout(() => navigate('/dashboard'), 1000);
+      } else if (userMessage.includes('help')) {
+        botResponse = "I can help you with:\n\n" +
+                     "- Booking flights, trains, event tickets, or movie tickets\n" +
+                     "- Checking schedules and availability\n" +
+                     "- Finding information about specific items\n" +
+                     "- Navigating to different sections of our website\n" +
+                     "- Answering questions about payment, refunds, and cancellations\n\n" +
+                     "What would you like assistance with today?";
+      } else if (userMessage.includes('ticket')) {
+        botResponse = "I can help you book tickets for flights, trains, events, or movies. Which one are you interested in?";
       }
       
       // Payment and ticket specific responses
@@ -394,6 +461,18 @@ const ChatBot = () => {
         setTimeout(() => navigate('/dashboard'), 1500);
       } else if (userMessage.includes('coupon') || userMessage.includes('discount')) {
         botResponse = "You can apply coupon codes during the payment process. Enter your code in the designated field and click 'Apply' to get the discount. Keep an eye on our offers section for the latest promotions!";
+      } else if (userMessage.includes('booking')) {
+        botResponse = "I can help you with bookings. Would you like to book a flight, train, event, or movie tickets?";
+      } else if (userMessage.includes('hello') || userMessage.includes('hi') || userMessage.includes('hey')) {
+        botResponse = "Hello there! I'm your booking assistant. How can I help you today? You can ask me about flights, trains, events, movies, or any other travel-related queries.";
+      } else if (userMessage.includes('thank')) {
+        botResponse = "You're welcome! Is there anything else I can help you with?";
+      } else if (userMessage.includes('bye') || userMessage.includes('goodbye')) {
+        botResponse = "Thank you for chatting with me! Feel free to return if you have any more questions. Have a great day!";
+      } else if (userMessage.includes('cost') || userMessage.includes('price') || userMessage.includes('how much')) {
+        botResponse = "Prices vary depending on what you'd like to book. Could you specify if you're interested in flights, trains, events, or movies?";
+      } else if (userMessage.includes('best') || userMessage.includes('recommend')) {
+        botResponse = "I'd be happy to make recommendations. Are you looking for flights, trains, events, or movies? Let me know your preferences, and I can suggest some options.";
       }
 
       setMessages(prev => [...prev, { text: botResponse, isBot: true }]);
