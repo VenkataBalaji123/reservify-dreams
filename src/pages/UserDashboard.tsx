@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,10 +8,11 @@ import BookingHistory from "@/components/bookings/BookingHistory";
 import BookingManagement from "@/components/bookings/BookingManagement";
 import { motion } from 'framer-motion';
 import { UserCog, History, CreditCard, CalendarDays, Map, Ticket, Film, Plane, TrainFront, LogOut, BadgePercent, Gift, Bell } from 'lucide-react';
+import PremiumBadge from '@/components/ui/premium-badge';
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
-  const { user, signOut } = useAuth();
+  const { user, signOut, profile } = useAuth();
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
 
@@ -48,7 +48,6 @@ const UserDashboard = () => {
     );
   }
 
-  // Animation variants
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -82,13 +81,17 @@ const UserDashboard = () => {
           transition={{ duration: 0.5 }}
           className="flex flex-col md:flex-row gap-8"
         >
-          {/* Sidebar */}
           <Card className="md:w-1/4 h-fit border-none shadow-lg bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-indigo-700">
-                <UserCog className="h-5 w-5" />
-                User Dashboard
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-indigo-700">
+                  <UserCog className="h-5 w-5" />
+                  User Dashboard
+                </CardTitle>
+                {profile?.is_premium && (
+                  <PremiumBadge variant="compact" premiumType={profile?.premium_type} />
+                )}
+              </div>
               <CardDescription>
                 Manage your bookings and profile
               </CardDescription>
@@ -151,7 +154,6 @@ const UserDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Main Content */}
           <div className="md:w-3/4">
             <Tabs value={activeTab} className="w-full">
               <TabsContent value="overview" className="mt-0">
@@ -159,7 +161,12 @@ const UserDashboard = () => {
                   <CardHeader>
                     <div className="flex justify-between items-center">
                       <div>
-                        <CardTitle>Account Overview</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                          Account Overview
+                          {profile?.is_premium && (
+                            <PremiumBadge premiumType={profile?.premium_type} />
+                          )}
+                        </CardTitle>
                         <CardDescription>
                           Welcome back! Here's a summary of your account.
                         </CardDescription>

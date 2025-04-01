@@ -115,6 +115,30 @@
     transform: scale(0.98);
   }
   
+  /* Premium button neon effect */
+  .btn-premium-neon {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-premium-neon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(79,70,229,0) 0%, rgba(79,70,229,0.3) 50%, rgba(79,70,229,0) 100%);
+    background-size: 200% 200%;
+    animation: pulse 1.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  
+  .btn-premium-neon:active {
+    transform: scale(0.98);
+    box-shadow: 0 0 20px rgba(124,58,237,0.8);
+  }
+  
   /* 3D transitions for page changes */
   .page-transition-enter {
     opacity: 0;
@@ -176,6 +200,15 @@
   }
 }
 
+@keyframes pulse {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+
 @keyframes blob {
   0% {
     transform: translate(0px, 0px) scale(1);
@@ -198,3 +231,4 @@
          after:origin-bottom-right after:transition-transform after:duration-300 
          hover:after:scale-x-100 hover:after:origin-bottom-left;
 }
+

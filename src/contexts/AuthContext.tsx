@@ -5,9 +5,20 @@ import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface ProfileType {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  avatar_url?: string;
+  is_premium?: boolean;
+  premium_type?: string;
+  premium_expiry?: string;
+  [key: string]: any;
+}
+
 interface AuthContextType {
   user: User | null;
-  profile: any;
+  profile: ProfileType | null;
   loading: boolean;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -63,6 +74,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data) {
         console.log('Profile found:', data);
+        
+        // Check if premium membership is expired
+        if (data.is_premium && data.premium_expiry) {
+          const now = new Date();
+          const expiryDate = new Date(data.premium_expiry);
+          
+          if (now > expiryDate) {
+            // Premium membership has expired, update the profile
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({
+                is_premium: false,
+                premium_type: null,
+                premium_expiry: null
+              })
+              .match({ id: userId });
+              
+            if (updateError) {
+              console.error('Error updating expired premium status:', updateError);
+            } else {
+              // Update local state with expired status
+              data.is_premium = false;
+              data.premium_type = null;
+              data.premium_expiry = null;
+            }
+          }
+        }
+        
         setProfile(data);
         return;
       }

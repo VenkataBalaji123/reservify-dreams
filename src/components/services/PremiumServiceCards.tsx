@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -21,7 +22,6 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const PremiumServiceCards = () => {
@@ -42,7 +42,7 @@ const PremiumServiceCards = () => {
         'Priority access to exclusive venues and experiences',
         'Personalized travel recommendations based on your preferences'
       ],
-      price: '₹999 per trip',
+      price: '₹499 per trip',
       bgImage: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80'
     },
     {
@@ -56,7 +56,7 @@ const PremiumServiceCards = () => {
         'Personalized mystery box with destination hints',
         'Emergency support contact throughout the journey'
       ],
-      price: '₹2,499 per person',
+      price: '₹999 per person',
       bgImage: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80'
     },
     {
@@ -70,7 +70,7 @@ const PremiumServiceCards = () => {
         'Flexible rebooking options',
         'Exclusive bundle-only discounts and perks'
       ],
-      price: '₹299 subscription fee + booking costs',
+      price: '₹299 subscription fee',
       bgImage: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80'
     },
     {
@@ -84,7 +84,7 @@ const PremiumServiceCards = () => {
         'Priority customer support',
         'Free upgrades when available'
       ],
-      price: '₹999 annual membership',
+      price: '₹499 annual membership',
       bgImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80'
     },
     {
@@ -98,7 +98,7 @@ const PremiumServiceCards = () => {
         'Expert-guided virtual tours of destinations',
         'Try-before-you-buy experience for premium bookings'
       ],
-      price: '₹149 per virtual tour package',
+      price: '₹99 per virtual tour package',
       bgImage: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80'
     },
     {
@@ -112,32 +112,20 @@ const PremiumServiceCards = () => {
         'One-click booking process',
         'Flexible cancellation on select deals'
       ],
-      price: '₹499 annual subscription',
+      price: '₹199 annual subscription',
       bgImage: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?q=80'
     }
   ];
 
   const handleServiceSelect = (service: any) => {
-    setSelectedService(service);
-    setDialogOpen(true);
-  };
-
-  const handleSubscribe = () => {
     if (!user) {
       toast.error("Please sign in to subscribe to premium services");
       navigate('/signin');
       return;
     }
     
-    // This would connect to a payment processing service in a real application
-    toast.success(`Thank you for your interest in ${selectedService.name}! Redirecting to payment page...`);
-    
-    // Simulate redirect delay
-    setTimeout(() => {
-      navigate('/booking-confirmation');
-    }, 1500);
-    
-    setDialogOpen(false);
+    // Navigate to the premium subscription page
+    navigate(`/premium-subscription/${service.id}`);
   };
 
   const handleLearnMore = (service: any) => {
@@ -225,7 +213,10 @@ const PremiumServiceCards = () => {
                 Cancel
               </Button>
               <Button 
-                onClick={handleSubscribe} 
+                onClick={() => {
+                  setDialogOpen(false);
+                  handleServiceSelect(selectedService);
+                }} 
                 disabled={!user}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >

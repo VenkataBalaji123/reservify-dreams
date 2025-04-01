@@ -27,6 +27,7 @@ import BookingManagement from "./components/bookings/BookingManagement";
 import BookingHistory from "./components/bookings/BookingHistory";
 import UserDashboard from "./pages/UserDashboard";
 import PremiumServices from "./pages/PremiumServices";
+import PremiumSubscription from "./pages/PremiumSubscription";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/events" element={<Events />} />
             <Route path="/movies" element={<Movies />} />
             <Route path="/premium-services" element={<PremiumServices />} />
+            <Route path="/premium-subscription/:serviceId" element={<PremiumSubscription />} />
             <Route path="/flights/:flightId/seats" element={<FlightSeats />} />
             <Route path="/buses/:busId/seats" element={<BusSeats />} />
             <Route path="/trains/:trainId/seats" element={<TrainSeats />} />
