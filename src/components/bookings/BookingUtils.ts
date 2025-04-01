@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Validate and convert booking_type to a valid BookingType
 export const validateBookingType = (type: string): BookingType => {
-  const validTypes: BookingType[] = ['flight', 'train', 'event', 'movie'];
+  const validTypes: BookingType[] = ['flight', 'train', 'event', 'movie', 'premium_service'];
   return validTypes.includes(type as BookingType) 
     ? (type as BookingType) 
     : 'event'; // Default fallback
@@ -61,6 +61,12 @@ export const fetchUnifiedBookings = async (userId: string) => {
       total_amount: booking.total_amount,
       created_at: booking.created_at,
       updated_at: booking.updated_at,
+      // Add the new required properties
+      title: booking.title || null,
+      status: booking.status || null,
+      amount: booking.amount || null,
+      description: booking.description || null,
+      metadata: booking.metadata || {},
       // Convert payment array to a single payment object if it exists
       payment: booking.payment && booking.payment.length > 0 ? {
         id: booking.payment[0].id,
