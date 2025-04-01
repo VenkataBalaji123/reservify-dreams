@@ -13,6 +13,9 @@ interface ProfileType {
   is_premium?: boolean;
   premium_type?: string;
   premium_expiry?: string;
+  phone?: string;
+  date_of_birth?: string;
+  updated_at?: string;
   [key: string]: any;
 }
 

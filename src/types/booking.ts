@@ -1,5 +1,5 @@
 
-export type BookingType = 'flight' | 'train' | 'event' | 'movie';
+export type BookingType = 'flight' | 'train' | 'event' | 'movie' | 'premium_service';
 export type TicketStatus = 'booked' | 'cancelled' | 'completed' | 'expired';
 export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 
@@ -15,6 +15,11 @@ export interface UnifiedBooking {
   total_amount: number;
   created_at: string;
   updated_at: string;
+  title: string | null;
+  status: string | null;
+  amount: number | null;
+  description: string | null;
+  metadata: any;
   payment?: Payment;
 }
 

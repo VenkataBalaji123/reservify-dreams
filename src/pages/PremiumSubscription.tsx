@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,8 +26,6 @@ const PremiumSubscription = () => {
       return;
     }
 
-    // In a real app, fetch the service details from the database
-    // Here we'll use a mock service based on the premiumServices in PremiumServiceCards
     const mockServices = [
       {
         id: 'concierge',
@@ -132,16 +129,17 @@ const PremiumSubscription = () => {
     if (!user || !service) return;
 
     try {
-      // Create a booking record to attach the payment to
       const { data, error } = await supabase
         .from('unified_bookings')
         .insert({
           user_id: user.id,
           booking_type: 'premium_service',
+          item_id: service.id,
           title: `Premium Service: ${service.name}`,
           booking_date: new Date().toISOString(),
           status: 'pending',
           amount: service.price,
+          total_amount: service.price,
           description: service.description,
           metadata: { service_id: service.id, is_premium: true }
         })
@@ -160,7 +158,6 @@ const PremiumSubscription = () => {
 
   const handlePaymentComplete = async () => {
     try {
-      // Update the user profile to mark them as premium
       const { error } = await supabase
         .from('profiles')
         .update({ 
@@ -174,7 +171,6 @@ const PremiumSubscription = () => {
 
       toast.success(`You're now subscribed to ${service.name}!`);
       
-      // Wait a moment before redirecting
       setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
