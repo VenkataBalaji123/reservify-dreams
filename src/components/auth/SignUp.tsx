@@ -68,18 +68,27 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      await signUp(formData.email, formData.password, {
+      const result = await signUp(formData.email, formData.password, {
         firstName: formData.firstName,
         lastName: formData.lastName,
         phone: formData.phone,
         dateOfBirth: formData.dateOfBirth,
       });
       
-      toast("Account created successfully! Please check your email for verification.");
+      console.log("Sign up result:", result);
+      
+      toast.success("Account created successfully! Please check your email for verification.");
       navigate("/signin");
     } catch (error: any) {
       console.error("Signup error:", error);
-      setError(error.message || "Failed to create account. Please try again.");
+      
+      if (error.message.includes("User already registered")) {
+        setError("This email is already registered. Please sign in instead.");
+      } else if (error.message.includes("Email not confirmed")) {
+        setError("Please check your email to verify your account before signing in.");
+      } else {
+        setError(error.message || "Failed to create account. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }

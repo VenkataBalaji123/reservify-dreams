@@ -23,7 +23,7 @@ interface AuthContextType {
   user: User | null;
   profile: ProfileType | null;
   loading: boolean;
-  signUp: (email: string, password: string, userData: any) => Promise<void>;
+  signUp: (email: string, password: string, userData: any) => Promise<any>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: any) => Promise<void>;
@@ -150,6 +150,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             phone: userData.phone,
             date_of_birth: userData.dateOfBirth,
           },
+          // Do not email confirm for easier testing
+          emailRedirectTo: window.location.origin + '/signin',
         },
       });
 
@@ -160,8 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log('Signup successful:', data);
       
-      // Note: the on_auth_user_created trigger will automatically
-      // create a profile and assign a role to the new user
+      // Return the data so the component can access it
+      return data;
     } catch (error: any) {
       console.error('Error in signUp function:', error);
       throw error;
@@ -170,16 +172,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
+      console.log("Sign in successful:", data);
       toast.success('Successfully signed in!');
       navigate('/dashboard');
     } catch (error: any) {
+      console.error("Sign in error:", error);
       toast.error(error.message);
       throw error;
     }
