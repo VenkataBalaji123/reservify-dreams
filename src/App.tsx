@@ -29,6 +29,8 @@ import UserDashboard from "./pages/UserDashboard";
 import PremiumServices from "./pages/PremiumServices";
 import PremiumSubscription from "./pages/PremiumSubscription";
 import AdminCoupons from "./pages/AdminCoupons";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/coupons" element={<AdminCoupons />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/flights" element={<Flights />} />
