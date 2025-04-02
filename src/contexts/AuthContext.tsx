@@ -164,7 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // create a profile and assign a role to the new user
 
       toast.success('Registration successful! Please check your email for verification.');
-      navigate('/signin');
+      // Don't navigate here, let the component handle navigation
     } catch (error: any) {
       console.error('Error in signUp function:', error);
       toast.error(error.message || 'An error occurred during signup');

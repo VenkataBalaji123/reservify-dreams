@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Mail, Lock, User, Phone, Calendar, Loader2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -23,7 +22,6 @@ const SignUp = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { signUp } = useAuth();
-  const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -76,10 +74,7 @@ const SignUp = () => {
         dateOfBirth: formData.dateOfBirth,
       });
       
-      toast({
-        title: "Account created successfully",
-        description: "Please check your email for verification.",
-      });
+      toast("Account created successfully! Please check your email for verification.");
       
       navigate("/signin");
     } catch (error: any) {
