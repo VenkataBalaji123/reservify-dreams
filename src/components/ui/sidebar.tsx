@@ -16,7 +16,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -147,6 +146,66 @@ const SidebarProvider = React.forwardRef<
   }
 )
 SidebarProvider.displayName = "SidebarProvider"
+
+const SidebarNavigationMenu = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "flex flex-col gap-2",
+      className
+    )}
+    {...props}
+  />
+))
+SidebarNavigationMenu.displayName = "SidebarNavigationMenu"
+
+const SidebarNavigationMenuList = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentProps<"ul">
+>(({ className, ...props }, ref) => (
+  <ul
+    ref={ref}
+    className={cn(
+      "flex flex-col gap-1",
+      className
+    )}
+    {...props}
+  />
+))
+SidebarNavigationMenuList.displayName = "SidebarNavigationMenuList"
+
+const SidebarNavigationMenuItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<"li">
+>(({ className, ...props }, ref) => (
+  <li
+    ref={ref}
+    className={cn(
+      "group",
+      className
+    )}
+    {...props}
+  />
+))
+SidebarNavigationMenuItem.displayName = "SidebarNavigationMenuItem"
+
+const SidebarNavigationMenuLink = React.forwardRef<
+  HTMLAnchorElement,
+  React.ComponentProps<"a">
+>(({ className, ...props }, ref) => (
+  <a
+    ref={ref}
+    className={cn(
+      "flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+      className
+    )}
+    {...props}
+  />
+))
+SidebarNavigationMenuLink.displayName = "SidebarNavigationMenuLink"
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
@@ -722,66 +781,6 @@ const SidebarMenuSubButton = React.forwardRef<
 })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
 
-const NavigationMenu = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "flex flex-col gap-2",
-      className
-    )}
-    {...props}
-  />
-))
-NavigationMenu.displayName = "NavigationMenu"
-
-const NavigationMenuList = React.forwardRef<
-  HTMLUListElement,
-  React.ComponentProps<"ul">
->(({ className, ...props }, ref) => (
-  <ul
-    ref={ref}
-    className={cn(
-      "flex flex-col gap-1",
-      className
-    )}
-    {...props}
-  />
-))
-NavigationMenuList.displayName = "NavigationMenuList"
-
-const NavigationMenuItem = React.forwardRef<
-  HTMLLIElement,
-  React.ComponentProps<"li">
->(({ className, ...props }, ref) => (
-  <li
-    ref={ref}
-    className={cn(
-      "group",
-      className
-    )}
-    {...props}
-  />
-))
-NavigationMenuItem.displayName = "NavigationMenuItem"
-
-const NavigationMenuLink = React.forwardRef<
-  HTMLAnchorElement,
-  React.ComponentProps<"a">
->(({ className, ...props }, ref) => (
-  <a
-    ref={ref}
-    className={cn(
-      "flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-      className
-    )}
-    {...props}
-  />
-))
-NavigationMenuLink.displayName = "NavigationMenuLink"
-
 const navLinkClasses = cn(
   "flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
 )
@@ -811,9 +810,9 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuLink,
+  SidebarNavigationMenu,
+  SidebarNavigationMenuList,
+  SidebarNavigationMenuItem,
+  SidebarNavigationMenuLink,
   navLinkClasses,
 }
