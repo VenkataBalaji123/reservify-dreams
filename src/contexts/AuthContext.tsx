@@ -162,12 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Note: the on_auth_user_created trigger will automatically
       // create a profile and assign a role to the new user
-
-      toast.success('Registration successful! Please check your email for verification.');
-      // Don't navigate here, let the component handle navigation
     } catch (error: any) {
       console.error('Error in signUp function:', error);
-      toast.error(error.message || 'An error occurred during signup');
       throw error;
     }
   };

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,6 @@ const SignUp = () => {
       });
       
       toast("Account created successfully! Please check your email for verification.");
-      
       navigate("/signin");
     } catch (error: any) {
       console.error("Signup error:", error);
