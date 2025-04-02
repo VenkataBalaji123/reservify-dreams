@@ -28,6 +28,7 @@ import BookingHistory from "./components/bookings/BookingHistory";
 import UserDashboard from "./pages/UserDashboard";
 import PremiumServices from "./pages/PremiumServices";
 import PremiumSubscription from "./pages/PremiumSubscription";
+import AdminCoupons from "./pages/AdminCoupons";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/coupons" element={<AdminCoupons />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/flights" element={<Flights />} />
             <Route path="/buses" element={<Buses />} />
