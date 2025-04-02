@@ -45,6 +45,7 @@ import { format } from "date-fns";
 
 type PaymentWithDetails = {
   id: string;
+  booking_id?: string;
   amount: number;
   payment_status: string;
   payment_date: string;
@@ -53,13 +54,14 @@ type PaymentWithDetails = {
   transaction_id: string | null;
   receipt_url: string | null;
   ticket_url: string | null;
-  booking: {
+  booking?: {
+    id?: string;
     title: string | null;
     booking_type: string;
     total_amount: number;
-    user: {
+    user?: {
       email: string | null;
-      profile: {
+      profile?: {
         first_name: string | null;
         last_name: string | null;
       };
@@ -89,6 +91,7 @@ const AdminPaymentManagement = () => {
         .select(`
           *,
           booking:booking_id (
+            id,
             title,
             booking_type,
             total_amount,
@@ -105,7 +108,9 @@ const AdminPaymentManagement = () => {
         
       if (error) throw error;
       
-      setPayments(data || []);
+      // Safely type the data as PaymentWithDetails[]
+      const typedData: PaymentWithDetails[] = data || [];
+      setPayments(typedData);
     } catch (error) {
       console.error("Error fetching payments:", error);
       toast.error("Failed to load payment data");
@@ -200,11 +205,11 @@ const AdminPaymentManagement = () => {
       if (paymentError) throw paymentError;
       
       // If there's a booking, update its status too
-      if (selectedPayment.booking) {
+      if (selectedPayment.booking && selectedPayment.booking_id) {
         const { error: bookingError } = await supabase
           .from("unified_bookings")
           .update({ status: "refunded", ticket_status: "cancelled" })
-          .eq("id", selectedPayment.booking.id);
+          .eq("id", selectedPayment.booking_id);
           
         if (bookingError) throw bookingError;
       }
