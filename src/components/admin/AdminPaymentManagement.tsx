@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -64,9 +63,9 @@ type PaymentWithDetails = {
       profile?: {
         first_name: string | null;
         last_name: string | null;
-      };
-    };
-  };
+      } | null;
+    } | null;
+  } | null;
 };
 
 const AdminPaymentManagement = () => {
@@ -85,7 +84,6 @@ const AdminPaymentManagement = () => {
     try {
       setIsLoading(true);
       
-      // Get payments with booking details
       const { data, error } = await supabase
         .from("payments")
         .select(`
@@ -108,8 +106,7 @@ const AdminPaymentManagement = () => {
         
       if (error) throw error;
       
-      // Safely type the data as PaymentWithDetails[]
-      const typedData: PaymentWithDetails[] = data || [];
+      const typedData = (data || []) as unknown as PaymentWithDetails[];
       setPayments(typedData);
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -196,7 +193,6 @@ const AdminPaymentManagement = () => {
     try {
       setIsLoading(true);
       
-      // Update payment status to refunded
       const { error: paymentError } = await supabase
         .from("payments")
         .update({ payment_status: "refunded" })
@@ -204,7 +200,6 @@ const AdminPaymentManagement = () => {
         
       if (paymentError) throw paymentError;
       
-      // If there's a booking, update its status too
       if (selectedPayment.booking && selectedPayment.booking_id) {
         const { error: bookingError } = await supabase
           .from("unified_bookings")
@@ -337,7 +332,6 @@ const AdminPaymentManagement = () => {
         </div>
       </CardContent>
       
-      {/* Payment Details Dialog */}
       <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -464,7 +458,6 @@ const AdminPaymentManagement = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Refund Confirmation Dialog */}
       <Dialog open={isRefundDialogOpen} onOpenChange={setIsRefundDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
