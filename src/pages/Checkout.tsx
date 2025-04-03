@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import PaymentForm from "@/components/payment/PaymentForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import PremiumBadge from '@/components/ui/premium-badge';
+import { validateBookingType } from '@/components/bookings/BookingUtils';
 
 const Checkout = () => {
   const { user, profile } = useAuth();
@@ -47,12 +48,16 @@ const Checkout = () => {
     try {
       setLoading(true);
       
+      // Make sure we use a valid booking_type from the allowed enum values
+      // The BookingType in types/booking.ts includes 'premium_service'
+      const validBookingType = validateBookingType('premium_service');
+      
       // Instead of using serviceData.id directly as a UUID, store it as a string in metadata
       const { data, error } = await supabase
         .from('unified_bookings')
         .insert({
           user_id: user.id,
-          booking_type: 'premium_service',
+          booking_type: validBookingType,
           item_id: user.id, // Use user's UUID as item_id to avoid UUID validation issues
           title: `Premium Service: ${serviceData.name}`,
           booking_date: new Date().toISOString(),
