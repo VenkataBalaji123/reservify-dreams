@@ -1,88 +1,159 @@
 
+import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plane, IndianRupee, Clock, Calendar } from 'lucide-react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plane, Clock, Calendar, IndianRupee } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from "@/integrations/supabase/client";
-import { format } from 'date-fns';
-import { toast } from "@/components/ui/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { FlightSearchFilters } from './FlightSearch';
+import SearchResultsEmpty from '../ui/search-results-empty';
 
-const FlightResults = () => {
-  const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
+interface FlightResultsProps {
+  filters?: FlightSearchFilters;
+}
+
+const FlightResults = ({ filters }: FlightResultsProps) => {
   const navigate = useNavigate();
+  const [filteredFlights, setFilteredFlights] = useState<any[]>([]);
 
-  const { data: flights, isLoading, error } = useQuery({
+  const { data: flights, isLoading } = useQuery({
     queryKey: ['flights'],
     queryFn: async () => {
-      console.log('Fetching flights data...');
-      // Don't filter by departure_time to show all flights
       const { data, error } = await supabase
         .from('flights')
-        .select('*')
-        .order('departure_time', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching flights:', error);
-        throw error;
-      }
+        .select('id, flight_number, airline, departure_city, arrival_city, departure_time, arrival_time, available_seats, base_price')
+        .limit(10);
       
-      console.log('Flights data retrieved:', data);
+      if (error) throw error;
       return data || [];
     }
   });
 
+  useEffect(() => {
+    if (!flights) return;
+    
+    let results = [...flights];
+    
+    if (filters) {
+      // Apply filters
+      if (filters.from) {
+        results = results.filter(flight => 
+          flight.departure_city.toLowerCase().includes(filters.from.toLowerCase())
+        );
+      }
+      
+      if (filters.to) {
+        results = results.filter(flight => 
+          flight.arrival_city.toLowerCase().includes(filters.to.toLowerCase())
+        );
+      }
+      
+      if (filters.date) {
+        const searchDate = new Date(filters.date);
+        searchDate.setHours(0, 0, 0, 0);
+        const nextDay = new Date(searchDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        results = results.filter(flight => {
+          const departureDate = new Date(flight.departure_time);
+          return departureDate >= searchDate && departureDate < nextDay;
+        });
+      }
+      
+      if (filters.airlines && filters.airlines.length > 0) {
+        results = results.filter(flight => 
+          filters.airlines!.includes(flight.airline)
+        );
+      }
+      
+      if (filters.priceRange) {
+        results = results.filter(flight => 
+          flight.base_price >= filters.priceRange![0] && 
+          flight.base_price <= filters.priceRange![1]
+        );
+      }
+      
+      if (filters.departureTime) {
+        results = results.filter(flight => {
+          const hour = new Date(flight.departure_time).getHours();
+          
+          switch (filters.departureTime) {
+            case 'morning':
+              return hour >= 5 && hour < 12;
+            case 'afternoon':
+              return hour >= 12 && hour < 17;
+            case 'evening':
+              return hour >= 17 && hour < 21;
+            case 'night':
+              return hour >= 21 || hour < 5;
+            default:
+              return true;
+          }
+        });
+      }
+    }
+    
+    setFilteredFlights(results);
+  }, [flights, filters]);
+
   const handleSelect = (flightId: string) => {
-    setSelectedFlight(flightId);
     navigate(`/flights/${flightId}/seats`);
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="space-y-4">
+        {[1, 2, 3].map((n) => (
+          <Card key={n} className="p-6 animate-pulse">
+            <div className="flex justify-between">
+              <div className="w-1/4 h-6 bg-gray-200 rounded"></div>
+              <div className="w-1/4 h-6 bg-gray-200 rounded"></div>
+            </div>
+            <div className="mt-4 w-3/4 h-4 bg-gray-200 rounded"></div>
+          </Card>
+        ))}
       </div>
     );
   }
 
-  if (error) {
-    console.error('Flight results error:', error);
-    return (
-      <Card className="p-6 text-center bg-red-50">
-        <p className="text-red-500">There was an error loading flights. Please try again later.</p>
-      </Card>
-    );
-  }
-
-  if (!flights || flights.length === 0) {
-    return (
-      <Card className="p-6 text-center">
-        <p className="text-gray-500">No flights available at the moment.</p>
-        <p className="text-sm mt-2">Please check back later or try different search criteria.</p>
-      </Card>
-    );
+  if (!filteredFlights.length) {
+    let searchTerm = '';
+    if (filters?.from || filters?.to) {
+      searchTerm = [filters.from, filters.to].filter(Boolean).join(' to ');
+    }
+    
+    let filterCount = 0;
+    if (filters) {
+      if (filters.airlines && filters.airlines.length > 0) filterCount++;
+      if (filters.departureTime) filterCount++;
+      if (filters.priceRange && (filters.priceRange[0] > 1000 || filters.priceRange[1] < 20000)) filterCount++;
+      if (filters.date) filterCount++;
+    }
+    
+    return <SearchResultsEmpty type="flights" searchTerm={searchTerm} filterCount={filterCount} />;
   }
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <p className="text-sm text-gray-500 pb-2">{flights.length} flights found</p>
-      {flights.map((flight) => (
+    <div className="space-y-4">
+      <p className="text-sm text-gray-500">{filteredFlights.length} flights found</p>
+      
+      {filteredFlights.map((flight) => (
         <Card key={flight.id} className="p-6 hover:shadow-lg transition-shadow">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Plane className="h-6 w-6 text-primary" />
+              <div className="p-3 bg-blue-50 rounded-full">
+                <Plane className="h-6 w-6 text-blue-600" />
               </div>
               <div>
                 <h3 className="font-semibold">{flight.airline}</h3>
-                <p className="text-sm text-gray-500">Flight #{flight.flight_number}</p>
+                <p className="text-sm text-gray-500">{flight.flight_number}</p>
               </div>
             </div>
 
             <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
               <div className="text-center">
-                <p className="font-semibold">{format(new Date(flight.departure_time), 'HH:mm')}</p>
+                <p className="font-semibold">{new Date(flight.departure_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                 <p className="text-sm text-gray-500">{flight.departure_city}</p>
               </div>
 
@@ -90,14 +161,21 @@ const FlightResults = () => {
                 <div className="w-32 h-px bg-gray-300 relative">
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <p className="text-xs text-gray-500">
-                      {Math.round((new Date(flight.arrival_time).getTime() - new Date(flight.departure_time).getTime()) / (1000 * 60))} min
+                      {(() => {
+                        const departure = new Date(flight.departure_time);
+                        const arrival = new Date(flight.arrival_time);
+                        const diff = Math.abs(arrival.getTime() - departure.getTime());
+                        const hours = Math.floor(diff / (1000 * 60 * 60));
+                        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        return `${hours}h ${mins}m`;
+                      })()}
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="text-center">
-                <p className="font-semibold">{format(new Date(flight.arrival_time), 'HH:mm')}</p>
+                <p className="font-semibold">{new Date(flight.arrival_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                 <p className="text-sm text-gray-500">{flight.arrival_city}</p>
               </div>
 
@@ -112,19 +190,6 @@ const FlightResults = () => {
                 <Button onClick={() => handleSelect(flight.id)}>Select</Button>
               </div>
             </div>
-          </div>
-
-          <div className="mt-4 pt-4 border-t flex items-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              {format(new Date(flight.departure_time), 'dd MMM yyyy')}
-            </div>
-            {flight.aircraft_type && (
-              <div className="flex items-center gap-1">
-                <Plane className="h-4 w-4" />
-                {flight.aircraft_type}
-              </div>
-            )}
           </div>
         </Card>
       ))}

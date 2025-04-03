@@ -1,15 +1,15 @@
 
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Calendar, MapPin, Search, Plane } from 'lucide-react';
-import FlightSearch from '@/components/flights/FlightSearch';
+import FlightSearch, { FlightSearchFilters } from '@/components/flights/FlightSearch';
 import FlightResults from '@/components/flights/FlightResults';
 import SectionBanner from '@/components/ui/section-banner';
 
 const Flights = () => {
-  // Set searchPerformed to true by default to always show flight results
-  const [searchPerformed, setSearchPerformed] = useState(true);
+  const [filters, setFilters] = useState<FlightSearchFilters | undefined>();
+
+  const handleSearch = (searchFilters: FlightSearchFilters) => {
+    setFilters(searchFilters);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-100 pt-16">
@@ -25,9 +25,8 @@ const Flights = () => {
           <p className="text-gray-600">Search and book flights to destinations worldwide</p>
         </div>
 
-        <FlightSearch onSearch={() => setSearchPerformed(true)} />
-
-        {searchPerformed && <FlightResults />}
+        <FlightSearch onSearch={handleSearch} />
+        <FlightResults filters={filters} />
       </div>
     </div>
   );

@@ -1,8 +1,11 @@
 
+import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bus, IndianRupee } from 'lucide-react';
+import { Bus, IndianRupee, Clock, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BusSearchFilters } from './BusSearch';
+import SearchResultsEmpty from '../ui/search-results-empty';
 
 const mockBuses = [
   {
@@ -127,16 +130,116 @@ const mockBuses = [
   }
 ];
 
-const BusResults = () => {
+interface BusResultsProps {
+  filters?: BusSearchFilters;
+}
+
+const BusResults = ({ filters }: BusResultsProps) => {
   const navigate = useNavigate();
+  const [filteredBuses, setFilteredBuses] = useState(mockBuses);
+
+  useEffect(() => {
+    if (!filters) {
+      setFilteredBuses(mockBuses);
+      return;
+    }
+
+    let results = [...mockBuses];
+
+    // Apply filters
+    if (filters.from) {
+      results = results.filter(bus => 
+        bus.departure.toLowerCase().includes(filters.from.toLowerCase())
+      );
+    }
+
+    if (filters.to) {
+      results = results.filter(bus => 
+        bus.arrival.toLowerCase().includes(filters.to.toLowerCase())
+      );
+    }
+
+    if (filters.date) {
+      // For mock data, we're not filtering by date since the mock doesn't include dates
+      // In a real app, we would filter by date here
+    }
+
+    if (filters.busType && filters.busType.length > 0) {
+      results = results.filter(bus => 
+        filters.busType!.includes(bus.type)
+      );
+    }
+
+    if (filters.departureTime) {
+      results = results.filter(bus => {
+        // Extract hour from departure time
+        const timeStr = bus.departureTime;
+        const match = timeStr.match(/(\d+):(\d+)\s*([AP]M)/i);
+        if (!match) return true;
+        
+        let hour = parseInt(match[1]);
+        const ampm = match[3].toUpperCase();
+        if (ampm === 'PM' && hour < 12) hour += 12;
+        if (ampm === 'AM' && hour === 12) hour = 0;
+        
+        switch (filters.departureTime) {
+          case 'morning':
+            return hour >= 6 && hour < 12;
+          case 'afternoon':
+            return hour >= 12 && hour < 18;
+          case 'evening':
+            return hour >= 18 && hour < 22;
+          case 'night':
+            return hour >= 22 || hour < 6;
+          default:
+            return true;
+        }
+      });
+    }
+
+    if (filters.priceRange) {
+      results = results.filter(bus => 
+        bus.price >= filters.priceRange![0] && 
+        bus.price <= filters.priceRange![1]
+      );
+    }
+
+    if (filters.seatsAvailable) {
+      results = results.filter(bus => 
+        bus.seatsAvailable >= filters.seatsAvailable!
+      );
+    }
+
+    setFilteredBuses(results);
+  }, [filters]);
 
   const handleSelect = (busId: number) => {
     navigate(`/buses/${busId}/seats`);
   };
 
+  if (filteredBuses.length === 0) {
+    let searchTerm = '';
+    if (filters?.from || filters?.to) {
+      searchTerm = [filters.from, filters.to].filter(Boolean).join(' to ');
+    }
+    
+    let filterCount = 0;
+    if (filters) {
+      if (filters.busType && filters.busType.length > 0) filterCount++;
+      if (filters.departureTime) filterCount++;
+      if (filters.priceRange && (filters.priceRange[0] > 300 || filters.priceRange[1] < 1000)) filterCount++;
+      if (filters.seatsAvailable) filterCount++;
+      if (filters.date) filterCount++;
+    }
+    
+    return <SearchResultsEmpty type="buses" searchTerm={searchTerm} filterCount={filterCount} />;
+  }
+
   return (
     <div className="space-y-4 animate-fade-in">
-      {mockBuses.map((bus) => (
+      <p className="text-sm text-gray-500">{filteredBuses.length} buses found</p>
+      
+      {filteredBuses.map((bus) => (
         <Card key={bus.id} className="p-6 hover:shadow-lg transition-shadow">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex items-center gap-4">

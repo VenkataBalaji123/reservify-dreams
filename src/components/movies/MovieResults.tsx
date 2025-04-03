@@ -7,6 +7,7 @@ import { Film, Clock, Languages, Star, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Movie, Language, MovieCategory } from '@/types/movie';
 import type { SearchFilters } from './MovieSearch';
+import SearchResultsEmpty from '../ui/search-results-empty';
 
 interface MovieResultsProps {
   filters: SearchFilters;
@@ -29,14 +30,25 @@ const MovieResults = ({ filters }: MovieResultsProps) => {
       if (filters.title) {
         query = query.ilike('title', `%${filters.title}%`);
       }
-      if (filters.language_id) {
+      if (filters.language_id && filters.language_id !== 'all') {
         query = query.eq('language_id', filters.language_id);
       }
-      if (filters.category_id) {
+      if (filters.category_id && filters.category_id !== 'all') {
         query = query.eq('category_id', filters.category_id);
       }
       if (filters.date) {
         query = query.eq('release_date', filters.date);
+      }
+      if (filters.rating) {
+        query = query.gte('rating', filters.rating);
+      }
+      if (filters.duration) {
+        query = query.gte('duration', filters.duration[0])
+                     .lte('duration', filters.duration[1]);
+      }
+      if (filters.priceRange) {
+        query = query.gte('base_price', filters.priceRange[0])
+                     .lte('base_price', filters.priceRange[1]);
       }
 
       const { data, error } = await query;
@@ -56,10 +68,20 @@ const MovieResults = ({ filters }: MovieResultsProps) => {
   }
 
   if (!movies?.length) {
+    let filterCount = 0;
+    if (filters.language_id && filters.language_id !== 'all') filterCount++;
+    if (filters.category_id && filters.category_id !== 'all') filterCount++;
+    if (filters.date) filterCount++;
+    if (filters.rating) filterCount++;
+    if (filters.duration) filterCount++;
+    if (filters.priceRange) filterCount++;
+    
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">No movies found matching your criteria.</p>
-      </div>
+      <SearchResultsEmpty 
+        type="movies" 
+        searchTerm={filters.title} 
+        filterCount={filterCount} 
+      />
     );
   }
 
