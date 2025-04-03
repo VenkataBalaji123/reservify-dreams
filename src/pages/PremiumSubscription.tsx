@@ -1,12 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import PaymentDialog from "@/components/payment/PaymentDialog";
 import { Sparkles, Shield, CheckCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,16 +15,8 @@ const PremiumSubscription = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [service, setService] = useState<any>(null);
-  const [paymentOpen, setPaymentOpen] = useState(false);
-  const [bookingId, setBookingId] = useState('');
 
   useEffect(() => {
-    if (!user) {
-      toast.error("Please sign in to subscribe to premium services");
-      navigate('/signin');
-      return;
-    }
-
     const mockServices = [
       {
         id: 'concierge',
@@ -39,7 +30,8 @@ const PremiumSubscription = () => {
           '24/7 support during your entire journey',
           'Priority access to exclusive venues and experiences',
           'Personalized travel recommendations based on your preferences'
-        ]
+        ],
+        category: 'travel'
       },
       {
         id: 'surprise',
@@ -53,7 +45,8 @@ const PremiumSubscription = () => {
           'All accommodations and main activities pre-arranged',
           'Personalized mystery box with destination hints',
           'Emergency support contact throughout the journey'
-        ]
+        ],
+        category: 'travel'
       },
       {
         id: 'bundle',
@@ -67,7 +60,8 @@ const PremiumSubscription = () => {
           'AI-curated suggestions based on your preferences',
           'Flexible rebooking options',
           'Exclusive bundle-only discounts and perks'
-        ]
+        ],
+        category: 'tools'
       },
       {
         id: 'loyalty',
@@ -81,7 +75,8 @@ const PremiumSubscription = () => {
           'Members-only flash sales and promotions',
           'Priority customer support',
           'Free upgrades when available'
-        ]
+        ],
+        category: 'membership'
       },
       {
         id: 'virtual',
@@ -95,7 +90,8 @@ const PremiumSubscription = () => {
           'Interactive 360° views of popular attractions',
           'Expert-guided virtual tours of destinations',
           'Try-before-you-buy experience for premium bookings'
-        ]
+        ],
+        category: 'experience'
       },
       {
         id: 'lastminute',
@@ -109,7 +105,8 @@ const PremiumSubscription = () => {
           'Exclusive last-minute offers not available to regular users',
           'One-click booking process',
           'Flexible cancellation on select deals'
-        ]
+        ],
+        category: 'deals'
       }
     ];
 
@@ -123,62 +120,27 @@ const PremiumSubscription = () => {
     }
     
     setLoading(false);
-  }, [serviceId, user, navigate]);
+  }, [serviceId, navigate]);
 
-  const handleSubscribe = async () => {
-    if (!user || !service) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('unified_bookings')
-        .insert({
-          user_id: user.id,
-          booking_type: 'premium_service',
-          item_id: service.id,
-          title: `Premium Service: ${service.name}`,
-          booking_date: new Date().toISOString(),
-          status: 'pending',
-          amount: service.price,
-          total_amount: service.price,
-          description: service.description,
-          metadata: { service_id: service.id, is_premium: true }
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setBookingId(data.id);
-      setPaymentOpen(true);
-    } catch (error) {
-      console.error('Error creating booking:', error);
-      toast.error('Failed to create booking. Please try again.');
+  const handleSubscribe = () => {
+    if (!user) {
+      navigate('/signin', { state: { returnUrl: `/premium-subscription/${serviceId}` } });
+      return;
     }
+
+    // Check if already subscribed to this service
+    if (profile?.is_premium && profile?.premium_type === service.id) {
+      toast.info("You are already subscribed to this service");
+      navigate('/dashboard');
+      return;
+    }
+
+    // Navigate to checkout with service data
+    navigate('/checkout', { state: { service } });
   };
 
-  const handlePaymentComplete = async () => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          is_premium: true,
-          premium_type: service.id,
-          premium_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1 year from now
-        })
-        .eq('id', user?.id);
-
-      if (error) throw error;
-
-      toast.success(`You're now subscribed to ${service.name}!`);
-      
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('There was an issue updating your profile. Please contact support.');
-    }
-  };
+  // Determine if user is already subscribed to this service
+  const isSubscribed = profile?.is_premium && profile?.premium_type === service?.id;
 
   if (loading) {
     return (
@@ -274,9 +236,16 @@ const PremiumSubscription = () => {
                   <Button 
                     onClick={handleSubscribe}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                    variant={isSubscribed ? "outline" : "default"}
                   >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Subscribe Now
+                    {isSubscribed ? (
+                      "Already Subscribed"
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Subscribe Now
+                      </>
+                    )}
                   </Button>
                   <p className="text-xs text-center mt-2 text-gray-500">
                     Secure payment processing. Cancel anytime.
@@ -287,14 +256,6 @@ const PremiumSubscription = () => {
           </CardContent>
         </Card>
       </div>
-      
-      <PaymentDialog
-        open={paymentOpen}
-        onOpenChange={setPaymentOpen}
-        amount={service?.price || 0}
-        bookingId={bookingId}
-        onPaymentComplete={handlePaymentComplete}
-      />
     </div>
   );
 };

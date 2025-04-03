@@ -28,6 +28,7 @@ import BookingHistory from "./components/bookings/BookingHistory";
 import UserDashboard from "./pages/UserDashboard";
 import PremiumServices from "./pages/PremiumServices";
 import PremiumSubscription from "./pages/PremiumSubscription";
+import Checkout from "./pages/Checkout";
 import AdminCoupons from "./pages/AdminCoupons";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/movies" element={<Movies />} />
             <Route path="/premium-services" element={<PremiumServices />} />
             <Route path="/premium-subscription/:serviceId" element={<PremiumSubscription />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/flights/:flightId/seats" element={<FlightSeats />} />
             <Route path="/buses/:busId/seats" element={<BusSeats />} />
             <Route path="/trains/:trainId/seats" element={<TrainSeats />} />
