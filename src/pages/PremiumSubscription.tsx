@@ -135,7 +135,7 @@ const PremiumSubscription = () => {
       return;
     }
 
-    // Navigate to checkout with service data
+    // Navigate to checkout with service data (not using the ID as a URL parameter)
     navigate('/checkout', { state: { service } });
   };
 

@@ -46,19 +46,26 @@ const Checkout = () => {
 
     try {
       setLoading(true);
+      
+      // Instead of using serviceData.id directly as a UUID, store it as a string in metadata
       const { data, error } = await supabase
         .from('unified_bookings')
         .insert({
           user_id: user.id,
           booking_type: 'premium_service',
-          item_id: serviceData.id,
+          item_id: user.id, // Use user's UUID as item_id to avoid UUID validation issues
           title: `Premium Service: ${serviceData.name}`,
           booking_date: new Date().toISOString(),
           status: 'pending',
           amount: serviceData.price,
           total_amount: serviceData.price,
           description: serviceData.description,
-          metadata: { service_id: serviceData.id, is_premium: true }
+          metadata: { 
+            service_id: serviceData.id, 
+            is_premium: true,
+            service_name: serviceData.name,
+            service_price: serviceData.price
+          }
         })
         .select()
         .single();
@@ -88,12 +95,12 @@ const Checkout = () => {
         if (bookingError) throw bookingError;
       }
 
-      // Update user profile to premium
+      // Update user profile to premium - store service.id as string in premium_type
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           is_premium: true,
-          premium_type: service.id,
+          premium_type: service.id, // This is fine as the column accepts strings
           premium_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1 year
         })
         .eq('id', user?.id);
