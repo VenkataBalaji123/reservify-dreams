@@ -1,13 +1,16 @@
-
 import { BookingType, TicketStatus, UnifiedBooking } from "@/types/booking";
 import { supabase } from "@/integrations/supabase/client";
 
 // Validate and convert booking_type to a valid BookingType
 export const validateBookingType = (type: string): BookingType => {
   const validTypes: BookingType[] = ['flight', 'train', 'event', 'movie', 'premium_service'];
-  return validTypes.includes(type as BookingType) 
-    ? (type as BookingType) 
-    : 'event'; // Default fallback
+  
+  if (!validTypes.includes(type as BookingType)) {
+    console.warn(`Invalid booking type: ${type}. Defaulting to 'event'`);
+    return 'event'; // Default fallback
+  }
+  
+  return type as BookingType;
 };
 
 // Cancel a unified booking

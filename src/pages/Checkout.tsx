@@ -52,7 +52,7 @@ const Checkout = () => {
       // The BookingType in types/booking.ts includes 'premium_service'
       const validBookingType = validateBookingType('premium_service');
       
-      // Instead of using serviceData.id directly as a UUID, store it as a string in metadata
+      // Create the booking record with the validated booking type
       const { data, error } = await supabase
         .from('unified_bookings')
         .insert({
@@ -75,7 +75,10 @@ const Checkout = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Booking error details:', error);
+        throw error;
+      }
 
       setBookingId(data.id);
     } catch (err: any) {
