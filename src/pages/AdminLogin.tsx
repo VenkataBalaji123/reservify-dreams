@@ -40,17 +40,18 @@ const AdminLogin = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.user.id)
-        .single();
+        .maybeSingle();
         
       if (roleError) throw roleError;
       
-      if (roleData?.role !== "admin") {
+      if (!roleData || roleData.role !== "admin") {
         // Sign out if not admin
         await supabase.auth.signOut();
         throw new Error("You do not have administrator privileges");
       }
       
       toast.success("Logged in as administrator");
+      // Explicitly navigate to admin dashboard
       navigate("/admin/dashboard");
     } catch (error: any) {
       console.error("Admin login error:", error);

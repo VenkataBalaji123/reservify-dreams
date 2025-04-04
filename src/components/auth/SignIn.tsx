@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Mail, Lock, Loader2, AlertCircle, ArrowLeft, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -22,15 +23,24 @@ const SignIn = () => {
     setError("");
 
     try {
-      await signIn(email, password);
-    } catch (error: any) {
-      if (error.message === "Invalid login credentials") {
-        setError("Invalid email or password. Please check your credentials or sign up if you don't have an account.");
-      } else if (error.message.includes("Email not confirmed")) {
-        setError("Please verify your email address before signing in. Check your inbox for the verification link.");
+      const { data, error } = await signIn(email, password);
+      
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          setError("Invalid email or password. Please check your credentials or sign up if you don't have an account.");
+        } else if (error.message.includes("Email not confirmed")) {
+          setError("Please verify your email address before signing in. Check your inbox for the verification link.");
+        } else {
+          setError(error.message);
+        }
       } else {
-        setError(error.message);
+        // Successful login
+        toast.success("Successfully signed in!");
+        navigate('/dashboard');
       }
+    } catch (error: any) {
+      // This should not be reached since signIn now returns errors instead of throwing
+      setError(error.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
