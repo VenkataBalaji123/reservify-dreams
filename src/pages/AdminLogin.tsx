@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Mail, Lock, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, ShieldCheck, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,13 +68,24 @@ const AdminLogin = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100">
       <Card className="w-full max-w-md p-8 space-y-6 shadow-lg animate-fade-in-up">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <ShieldCheck className="h-12 w-12 text-indigo-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Administrator Login</h1>
-          <p className="text-gray-600 mt-2">Access the system administration panel</p>
+        <div className="flex justify-between items-center">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate("/auth")}
+            className="text-gray-600"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold text-gray-900 flex-1 text-center">Admin Login</h1>
+          <div className="w-8"></div> {/* Spacer for alignment */}
         </div>
+
+        <div className="flex justify-center mb-4">
+          <ShieldCheck className="h-12 w-12 text-indigo-600" />
+        </div>
+        
+        <p className="text-gray-600 text-center">Access the system administration panel</p>
 
         {error && (
           <Alert variant="destructive">
@@ -124,19 +135,6 @@ const AdminLogin = () => {
             )}
           </Button>
         </form>
-
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Return to{" "}
-            <Button
-              variant="link"
-              onClick={() => navigate("/")}
-              className="text-indigo-600 hover:text-indigo-700 p-0"
-            >
-              Home
-            </Button>
-          </p>
-        </div>
       </Card>
     </div>
   );

@@ -32,6 +32,7 @@ import Checkout from "./pages/Checkout";
 import AdminCoupons from "./pages/AdminCoupons";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import AuthSelect from "./pages/AuthSelect";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
           <Navbar />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<AuthSelect />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/dashboard" element={<UserDashboard />} />

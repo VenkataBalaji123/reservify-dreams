@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Mail, Lock, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -39,10 +39,20 @@ const SignIn = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
       <Card className="w-full max-w-md p-8 space-y-6 animate-fade-in-up">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+        <div className="flex justify-between items-center">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate("/auth")}
+            className="text-gray-600"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold text-gray-900 flex-1 text-center">User Login</h1>
+          <div className="w-8"></div> {/* Spacer for alignment */}
         </div>
+        
+        <p className="text-gray-600 text-center">Sign in to your user account</p>
 
         {error && (
           <Alert variant="destructive">
