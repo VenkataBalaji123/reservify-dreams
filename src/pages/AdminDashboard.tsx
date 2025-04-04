@@ -24,6 +24,8 @@ const AdminDashboard = () => {
     totalEvents: 0,
     totalBookings: 0,
     totalRevenue: 0,
+    ticketsSold: 0,
+    activeCoupons: 0,
   });
 
   useEffect(() => {
@@ -87,11 +89,22 @@ const AdminDashboard = () => {
 
       const totalRevenue = bookings.reduce((sum, booking) => sum + (booking.total_amount || 0), 0);
 
+      // Fetch active coupons count
+      const now = new Date().toISOString();
+      const { count: couponsCount, error: couponsError } = await supabase
+        .from("coupons")
+        .select("*", { count: "exact", head: true })
+        .gte("valid_until", now);
+
+      if (couponsError) throw couponsError;
+
       setStats({
         totalUsers: usersCount || 0,
         totalEvents: eventsCount || 0,
         totalBookings: bookings.length,
         totalRevenue: totalRevenue,
+        ticketsSold: bookings.length,
+        activeCoupons: couponsCount || 0
       });
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
@@ -119,7 +132,7 @@ const AdminDashboard = () => {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className="p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
               <h3 className="text-sm font-medium text-gray-500">Total Users</h3>
               <p className="text-3xl font-bold text-indigo-600 mt-1">{stats.totalUsers}</p>
@@ -140,6 +153,16 @@ const AdminDashboard = () => {
               <p className="text-3xl font-bold text-indigo-600 mt-1">
                 ${stats.totalRevenue.toFixed(2)}
               </p>
+            </Card>
+            
+            <Card className="p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+              <h3 className="text-sm font-medium text-gray-500">Tickets Sold</h3>
+              <p className="text-3xl font-bold text-indigo-600 mt-1">{stats.ticketsSold}</p>
+            </Card>
+            
+            <Card className="p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+              <h3 className="text-sm font-medium text-gray-500">Active Coupons</h3>
+              <p className="text-3xl font-bold text-indigo-600 mt-1">{stats.activeCoupons}</p>
             </Card>
           </div>
           
@@ -163,13 +186,24 @@ const AdminDashboard = () => {
             </TabsContent>
           </Tabs>
           
-          <div className="mt-6 text-right">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button 
               variant="outline" 
               onClick={() => navigate("/admin/coupons")} 
-              className="mr-2"
+              className="bg-indigo-50 border-indigo-200 hover:bg-indigo-100"
             >
-              Manage Coupons
+              Manage Coupons & Offers
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                toast.info("Generating Revenue Reports...");
+                // This would be implemented to generate/download reports
+              }}
+              className="bg-green-50 border-green-200 hover:bg-green-100"
+            >
+              Generate Revenue Reports
             </Button>
           </div>
         </div>

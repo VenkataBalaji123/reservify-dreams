@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,6 @@ const SignUp = () => {
       return false;
     }
 
-    // Validate phone number with a more lenient regex
     const phonePattern = /^\+?[0-9\s-()]{7,15}$/;
     if (formData.phone && !phonePattern.test(formData.phone)) {
       setError("Please enter a valid phone number");
@@ -96,10 +94,18 @@ const SignUp = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
-      <Card className="w-full max-w-md p-8 space-y-6 shadow-lg border-none bg-white/90 backdrop-blur-sm animate-fade-in-up">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-600 mt-2">Sign up for a new account</p>
+      <Card className="w-full max-w-md p-8 space-y-6 animate-fade-in-up">
+        <div className="flex justify-between items-center">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate("/auth")}
+            className="text-gray-600"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold text-gray-900 flex-1 text-center">Sign Up</h1>
+          <div className="w-8"></div>
         </div>
 
         {error && (

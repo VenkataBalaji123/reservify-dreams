@@ -33,6 +33,11 @@ import AdminCoupons from "./pages/AdminCoupons";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AuthSelect from "./pages/AuthSelect";
+import AdminFlights from "./pages/admin/AdminFlights";
+import AdminBuses from "./pages/admin/AdminBuses";
+import AdminTrains from "./pages/admin/AdminTrains";
+import AdminMovies from "./pages/admin/AdminMovies";
+import AdminReports from "./pages/admin/AdminReports";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +59,11 @@ const App = () => (
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/coupons" element={<AdminCoupons />} />
+            <Route path="/admin/flights" element={<AdminFlights />} />
+            <Route path="/admin/buses" element={<AdminBuses />} />
+            <Route path="/admin/trains" element={<AdminTrains />} />
+            <Route path="/admin/movies" element={<AdminMovies />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/flights" element={<Flights />} />
             <Route path="/buses" element={<Buses />} />

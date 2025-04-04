@@ -10,7 +10,12 @@ import {
   LogOut, 
   LayoutDashboard, 
   Menu,
-  X
+  X,
+  Plane,
+  Bus,
+  Train,
+  Film,
+  FileBarChart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,13 +61,20 @@ const AdminSidebar = () => {
         </div>
 
         <div className="flex flex-col h-[calc(100%-4rem)] p-4">
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-1">
+            <h3 className="px-3 text-xs font-semibold text-indigo-300 uppercase tracking-wider mt-2 mb-1">
+              Overview
+            </h3>
             <NavItem 
               to="/admin/dashboard" 
               icon={<LayoutDashboard className="h-5 w-5" />} 
               label="Dashboard" 
               isActive={isActive("/admin/dashboard")} 
             />
+            
+            <h3 className="px-3 text-xs font-semibold text-indigo-300 uppercase tracking-wider mt-4 mb-1">
+              Management
+            </h3>
             <NavItem 
               to="/admin/users" 
               icon={<Users className="h-5 w-5" />} 
@@ -76,6 +88,34 @@ const AdminSidebar = () => {
               isActive={isActive("/admin/events")} 
             />
             <NavItem 
+              to="/admin/flights" 
+              icon={<Plane className="h-5 w-5" />} 
+              label="Flights Management" 
+              isActive={isActive("/admin/flights")} 
+            />
+            <NavItem 
+              to="/admin/buses" 
+              icon={<Bus className="h-5 w-5" />} 
+              label="Buses Management" 
+              isActive={isActive("/admin/buses")} 
+            />
+            <NavItem 
+              to="/admin/trains" 
+              icon={<Train className="h-5 w-5" />} 
+              label="Trains Management" 
+              isActive={isActive("/admin/trains")} 
+            />
+            <NavItem 
+              to="/admin/movies" 
+              icon={<Film className="h-5 w-5" />} 
+              label="Movies Management" 
+              isActive={isActive("/admin/movies")} 
+            />
+            
+            <h3 className="px-3 text-xs font-semibold text-indigo-300 uppercase tracking-wider mt-4 mb-1">
+              Finance
+            </h3>
+            <NavItem 
               to="/admin/payments" 
               icon={<CreditCard className="h-5 w-5" />} 
               label="Payment Management" 
@@ -88,9 +128,19 @@ const AdminSidebar = () => {
               isActive={isActive("/admin/coupons")} 
             />
             <NavItem 
+              to="/admin/reports" 
+              icon={<FileBarChart className="h-5 w-5" />} 
+              label="Revenue Reports" 
+              isActive={isActive("/admin/reports")} 
+            />
+            
+            <h3 className="px-3 text-xs font-semibold text-indigo-300 uppercase tracking-wider mt-4 mb-1">
+              Settings
+            </h3>
+            <NavItem 
               to="/admin/settings" 
               icon={<Settings className="h-5 w-5" />} 
-              label="Settings" 
+              label="System Settings" 
               isActive={isActive("/admin/settings")} 
             />
           </div>
