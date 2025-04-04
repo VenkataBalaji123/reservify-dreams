@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -29,29 +28,28 @@ const AdminLogin = () => {
       
       if (signInError) throw signInError;
       
-      // Then check if user has admin role
+      // Check if user has admin role using the is_admin function
       const { data: user } = await supabase.auth.getUser();
       
       if (!user || !user.user) {
         throw new Error("Authentication failed");
       }
       
-      const { data: roleData, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.user.id)
-        .maybeSingle();
-        
-      if (roleError) throw roleError;
+      const { data: isAdmin, error: adminCheckError } = await supabase.rpc(
+        'is_admin',
+        { user_uuid: user.user.id }
+      );
       
-      if (!roleData || roleData.role !== "admin") {
+      if (adminCheckError) throw adminCheckError;
+      
+      if (!isAdmin) {
         // Sign out if not admin
         await supabase.auth.signOut();
         throw new Error("You do not have administrator privileges");
       }
       
       toast.success("Logged in as administrator");
-      // Explicitly navigate to admin dashboard
+      // Navigate to admin dashboard
       navigate("/admin/dashboard");
     } catch (error: any) {
       console.error("Admin login error:", error);
