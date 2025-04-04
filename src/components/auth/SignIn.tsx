@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Mail, Lock, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, ArrowLeft, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -104,6 +104,15 @@ const SignIn = () => {
         </form>
 
         <div className="text-center space-y-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/admin/login")}
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <ShieldCheck className="h-5 w-5 text-purple-600" />
+            <span>Switch to Admin Login</span>
+          </Button>
+          
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
             <Button

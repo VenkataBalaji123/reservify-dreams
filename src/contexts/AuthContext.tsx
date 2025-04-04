@@ -24,7 +24,7 @@ interface AuthContextType {
   profile: ProfileType | null;
   loading: boolean;
   signUp: (email: string, password: string, userData: any) => Promise<any>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
   updateProfile: (data: any) => Promise<void>;
 }
@@ -180,12 +180,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
 
       console.log("Sign in successful:", data);
-      toast.success('Successfully signed in!');
-      navigate('/dashboard');
+      
+      // Return the result so the caller can use it
+      return { data, error: null };
     } catch (error: any) {
       console.error("Sign in error:", error);
-      toast.error(error.message);
-      throw error;
+      // Return the error instead of throwing it
+      return { data: null, error };
     }
   };
 

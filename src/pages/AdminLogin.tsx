@@ -25,7 +25,9 @@ const AdminLogin = () => {
 
     try {
       // First sign in with regular auth
-      await signIn(email, password);
+      const { data, error: signInError } = await signIn(email, password);
+      
+      if (signInError) throw signInError;
       
       // Then check if user has admin role
       const { data: user } = await supabase.auth.getUser();
