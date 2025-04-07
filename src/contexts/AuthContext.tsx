@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '@supabase/supabase-js';
@@ -38,7 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check active sessions and set up auth subscription
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -78,13 +76,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         console.log('Profile found:', data);
         
-        // Check if premium membership is expired
         if (data.is_premium && data.premium_expiry) {
           const now = new Date();
           const expiryDate = new Date(data.premium_expiry);
           
           if (now > expiryDate) {
-            // Premium membership has expired, update the profile
             const { error: updateError } = await supabase
               .from('profiles')
               .update({
@@ -97,7 +93,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (updateError) {
               console.error('Error updating expired premium status:', updateError);
             } else {
-              // Update local state with expired status
               data.is_premium = false;
               data.premium_type = null;
               data.premium_expiry = null;
@@ -109,8 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // If we get here, we'll try one more time after a short delay
-      // This gives the trigger time to create the profile if it hasn't yet
       console.log('Profile not found on first attempt, retrying after delay...');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -144,13 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          data: {
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            phone: userData.phone,
-            date_of_birth: userData.dateOfBirth,
-          },
-          // Do not email confirm for easier testing
+          data: userData,
           emailRedirectTo: window.location.origin + '/signin',
         },
       });
@@ -162,11 +149,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log('Signup successful:', data);
       
-      // Return the data so the component can access it
-      return data;
+      return { data, error: null };
     } catch (error: any) {
       console.error('Error in signUp function:', error);
-      throw error;
+      return { data: null, error };
     }
   };
 
@@ -181,11 +167,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log("Sign in successful:", data);
       
-      // Return the result so the caller can use it
       return { data, error: null };
     } catch (error: any) {
       console.error("Sign in error:", error);
-      // Return the error instead of throwing it
       return { data: null, error };
     }
   };
@@ -223,7 +207,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
-      // Update the local profile state
       setProfile({ ...profile, ...data });
       toast.success('Profile updated successfully!');
     } catch (error: any) {

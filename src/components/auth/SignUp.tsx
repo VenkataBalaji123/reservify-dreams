@@ -67,30 +67,37 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      // Sanitize and prepare the user metadata
+      // Carefully prepare user metadata - explicitly set nulls to avoid undefined values
       const userData = {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
         phone: formData.phone ? formData.phone.trim() : null,
-        dateOfBirth: formData.dateOfBirth ? formData.dateOfBirth : null,
+        date_of_birth: formData.dateOfBirth || null
       };
       
-      const result = await signUp(formData.email, formData.password, userData);
+      const { data, error } = await signUp(formData.email, formData.password, userData);
       
-      console.log("Sign up result:", result);
+      if (error) {
+        console.error("Signup error:", error);
+        
+        if (error.message.includes("User already registered")) {
+          setError("This email is already registered. Please sign in instead.");
+        } else if (error.message.includes("Email not confirmed")) {
+          setError("Please check your email to verify your account before signing in.");
+        } else {
+          setError(error.message || "Failed to create account. Please try again.");
+        }
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("Sign up result:", data);
       
       toast.success("Account created successfully! Please check your email for verification.");
       navigate("/signin");
     } catch (error: any) {
       console.error("Signup error:", error);
-      
-      if (error.message.includes("User already registered")) {
-        setError("This email is already registered. Please sign in instead.");
-      } else if (error.message.includes("Email not confirmed")) {
-        setError("Please check your email to verify your account before signing in.");
-      } else {
-        setError(error.message || "Failed to create account. Please try again.");
-      }
+      setError(error.message || "Failed to create account. Please try again.");
     } finally {
       setIsLoading(false);
     }
