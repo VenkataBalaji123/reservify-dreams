@@ -67,12 +67,15 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      const result = await signUp(formData.email, formData.password, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        dateOfBirth: formData.dateOfBirth,
-      });
+      // Sanitize and prepare the user metadata
+      const userData = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phone: formData.phone ? formData.phone.trim() : null,
+        dateOfBirth: formData.dateOfBirth ? formData.dateOfBirth : null,
+      };
+      
+      const result = await signUp(formData.email, formData.password, userData);
       
       console.log("Sign up result:", result);
       

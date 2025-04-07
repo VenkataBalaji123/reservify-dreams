@@ -33,11 +33,12 @@ const SignIn = () => {
         } else {
           setError(error.message);
         }
-      } else {
-        // Successful login
-        toast.success("Successfully signed in!");
-        navigate('/dashboard');
+        return;
       }
+      
+      // Successful login
+      toast.success("Successfully signed in!");
+      navigate('/dashboard');
     } catch (error: any) {
       // This should not be reached since signIn now returns errors instead of throwing
       setError(error.message || "An unexpected error occurred");
