@@ -67,13 +67,15 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      // Carefully prepare user metadata - explicitly set nulls to avoid undefined values
+      // Make sure we're explicitly setting all user metadata values
       const userData = {
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
-        phone: formData.phone ? formData.phone.trim() : null,
+        phone: formData.phone.trim() || null,
         date_of_birth: formData.dateOfBirth || null
       };
+      
+      console.log("Attempting to sign up with user data:", userData);
       
       const { data, error } = await signUp(formData.email, formData.password, userData);
       
@@ -87,7 +89,6 @@ const SignUp = () => {
         } else {
           setError(error.message || "Failed to create account. Please try again.");
         }
-        setIsLoading(false);
         return;
       }
       

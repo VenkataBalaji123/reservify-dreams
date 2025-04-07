@@ -1,6 +1,7 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -28,29 +29,43 @@ interface AuthContextType {
   updateProfile: (data: any) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create context with default values
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  loading: true,
+  signUp: async () => ({ data: null, error: new Error('Not implemented') }),
+  signIn: async () => ({ data: null, error: new Error('Not implemented') }),
+  signOut: async () => {},
+  updateProfile: async () => {},
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<ProfileType | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        // Use setTimeout to prevent potential deadlock with Supabase client
+        setTimeout(() => {
+          fetchProfile(session.user.id);
+        }, 0);
+      } else {
+        setProfile(null);
       }
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
       }
       setLoading(false);
     });
@@ -65,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .match({ id: userId })
+        .eq('id', userId)
         .maybeSingle();
 
       if (error) {
@@ -88,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 premium_type: null,
                 premium_expiry: null
               })
-              .match({ id: userId });
+              .eq('id', userId);
               
             if (updateError) {
               console.error('Error updating expired premium status:', updateError);
@@ -110,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: retryData, error: retryError } = await supabase
         .from('profiles')
         .select('*')
-        .match({ id: userId })
+        .eq('id', userId)
         .maybeSingle();
 
       if (retryError) {
@@ -133,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Signing up user with data:', { email, userData });
       
+      // Pass userData directly to options.data so it's correctly stored in raw_user_meta_data
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -144,11 +160,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Signup error:', error);
-        throw error;
+        return { data: null, error };
       }
 
       console.log('Signup successful:', data);
-      
       return { data, error: null };
     } catch (error: any) {
       console.error('Error in signUp function:', error);
@@ -163,10 +178,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        return { data: null, error };
+      }
 
       console.log("Sign in successful:", data);
-      
       return { data, error: null };
     } catch (error: any) {
       console.error("Sign in error:", error);
@@ -200,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase
         .from('profiles')
         .update(data)
-        .match({ id: user.id });
+        .eq('id', user.id);
 
       if (error) {
         console.error('Supabase update error:', error);
